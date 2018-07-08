@@ -19,3 +19,7 @@ type Response struct {
 	Prv_txn     string
 	Sum         string
 }
+
+func NewErrorResponse(code int, comment string) Response {
+	return Response{Osmp_txn_id: "0", Result: code, Comment: "Ошибка проведения транзации!", Prv_txn: "0", Sum: "0"}
+}
