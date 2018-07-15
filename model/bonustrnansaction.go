@@ -12,7 +12,7 @@ import "encoding/xml"
 //"<bonusAmount>" + sum + "</bonusAmount>" +
 //"<checkId>" + txn_id + "</checkId>";
 
-type Bonustransaction struct {
+type BonusTransaction struct {
 	XMLName     xml.Name `xml:"request"`
 	FrontEnd    string   `xml:"frontEnd,attr"`
 	Type        string   `xml:"type,attr"`
@@ -22,4 +22,11 @@ type Bonustransaction struct {
 	Ref         string   `xml:"ref"`
 	Amount      string   `xml:"amount"`
 	CheckId     string   `xml:"checkId"`
+}
+
+type BonusTransactionResponse struct {
+	XMLName       xml.Name `xml:"response"`
+	Result        int      `xml:"result,attr"`
+	Description   string   `xml:"resultDescription,attr"`
+	TransactionId string   `xml:"transactionId"`
 }
