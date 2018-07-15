@@ -1,9 +1,10 @@
 {
   "LSURL" : "http://localhost:8080",
-  "LSPath" : "/j/LS/",
+  "LSPath" : "/LS/msrv/",
   "QIWI_IP_1": "",
   "QIWI_IP_2": "",
   "IP_CHECK": false,
   "LS_LOGIN": "CCFS01",
-  "LS_PASSWORD": "pswTest123"
+  "LS_PASSWORD": "pswTest123",
+  "APP_PORT": "8098"
 }

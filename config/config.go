@@ -8,6 +8,7 @@ import (
 
 type Configuration struct {
 	DBPORT     		int
+	APP_PORT        string
 	LSPATH    	    string
 	LSURL           string
 	IP_CHECK		bool

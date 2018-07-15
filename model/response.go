@@ -12,12 +12,12 @@ import "encoding/xml"
 //    </response>
 
 type Response struct {
-	XMLName     xml.Name `xml:"person"`
-	Osmp_txn_id string
-	Result      int
-	Comment     string
-	Prv_txn     string
-	Sum         string
+	XMLName     xml.Name `xml:"response"`
+	Osmp_txn_id string   `xml:"osmp_txn_id"`
+	Result      int		 `xml:"result"`
+	Comment     string	 `xml:"comment"`
+	Prv_txn     string	 `xml:"prv_txn"`
+	Sum         string	 `xml:"sum"`
 }
 
 func NewErrorResponse(code int, comment string) Response {

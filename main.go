@@ -13,5 +13,5 @@ func main() {
 	// представляйте, как будто я одеваете в кучу шкурок апельсин. А запрос их снимает
 	http.HandleFunc("/transaction", middleware.Chain(service.NewTransaction, middleware.Verify(), middleware.Logging(), middleware.Method("GET")))
 
-	http.ListenAndServe(":8098", nil)
+	http.ListenAndServe(":" + config.Config.APP_PORT, nil)
 }
