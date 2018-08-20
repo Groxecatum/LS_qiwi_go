@@ -1,9 +1,9 @@
-package rabbitmq
+package golang_commons
 
 import (
 	"fmt"
 	"github.com/streadway/amqp"
-	"gogs.kopilka.kz/golang_commons/pkg/common"
+	"golang_commons/common"
 )
 
 // FailOnError обоснован? или нет? с одной стороны - не может достучаться до рэббита - значит, не работает

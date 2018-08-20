@@ -1,4 +1,4 @@
-package common
+package golang_commons
 
 import (
 	"fmt"
