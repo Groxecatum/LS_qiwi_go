@@ -1,4 +1,4 @@
-package rabbitmq
+package golang_commons
 
 import (
 	"fmt"

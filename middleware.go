@@ -1,4 +1,4 @@
-package middleware
+package golang_commons
 
 import (
 	"log"
