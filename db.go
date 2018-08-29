@@ -3,6 +3,7 @@ package golang_commons
 import (
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 	"log"
 )
 
