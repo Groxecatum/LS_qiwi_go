@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-const ClientBySessionServlet = "msrv_GetClientBySession"
-const ActorBySessionServlet = "msrv_GetActorBySession"
+const ClientBySessionServlet = "msrv/msrv_GetClientBySession"
+const ActorBySessionServlet = "msrv/msrv_GetActorBySession"
 
 //Данные клиента по сессии
 func ClientFromSession(sessionId, LSUrl, LSPath string) (Client, error) {
