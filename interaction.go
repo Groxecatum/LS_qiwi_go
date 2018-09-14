@@ -31,7 +31,7 @@ func ClientFromSession(sessionId, LSUrl, LSPath string) (Client, error) {
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 
-	log.Println(string(respBody))
+	log.Println("Client from session answer: " + string(respBody))
 
 	cli := Client{}
 	err = xml.Unmarshal(respBody, &cli)
@@ -60,7 +60,7 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 
-	log.Println(string(respBody))
+	log.Println("Actor from session answer: " + string(respBody))
 
 	cli := Actor{}
 	err = xml.Unmarshal(respBody, &cli)
