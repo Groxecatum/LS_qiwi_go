@@ -1,6 +1,7 @@
 package golang_commons
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
 	"log"
@@ -48,6 +49,7 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 		strings.NewReader(body))
 	if err != nil {
 		log.Println("Error getting user for session " + sessionId)
+		return Actor{}, err
 	}
 
 	req.Header.Add("Content-Type", "application/xml")
@@ -66,4 +68,31 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 	err = xml.Unmarshal(respBody, &cli)
 
 	return cli, err
+}
+
+func SendObjectJSON(obj interface{}, url, path string) ([]byte, error) {
+	hc := http.Client{}
+	b, err := json.Marshal(obj)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	req, err := http.NewRequest("POST", url+path, strings.NewReader(string(b)))
+	if err != nil {
+		return []byte{}, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := hc.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := ioutil.ReadAll(resp.Body)
+
+	log.Println("Sending object answer: " + string(respBody))
+
+	return respBody, err
 }
