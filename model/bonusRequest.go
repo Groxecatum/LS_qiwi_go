@@ -80,3 +80,7 @@ func RequestFromBytes(b []byte) (BonusRequest, error) {
 	err := json.Unmarshal(b, &req)
 	return req, err
 }
+
+func (req *BonusRequest) IsPayment() bool {
+	return false
+}
