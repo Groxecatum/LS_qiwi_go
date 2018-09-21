@@ -6,10 +6,10 @@ import (
 	"log"
 )
 
-type RMQHandlerFunc func(delivery amqp.Delivery)
+type RMQHandlerFunc func(delivery amqp.Delivery) error
 
 // FailOnError обоснован? или нет? с одной стороны - не может достучаться до рэббита - значит, не работает
-func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) {
+func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
 	addr := fmt.Sprint("amqp://", rabbitMQUser, ":", rabbitMQPassword, "@", rabbitMQUrl)
 	conn, err := amqp.Dial(addr)
 	FailOnError(err, "Failed to connect to RabbitMQ")
@@ -31,7 +31,7 @@ func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl
 	FailOnError(err, "Failed to publish a message")
 }
 
-func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) {
+func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
 	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + " + @" + rabbitMQUrl + "/")
 	FailOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -63,7 +63,12 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
-			handler(d)
+			err = handler(d)
+			if err != nil {
+				ch.Reject(d.DeliveryTag, false)
+			}
+
+			ch.Ack(d.DeliveryTag, false)
 		}
 	}()
 }
