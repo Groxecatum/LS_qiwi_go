@@ -2,10 +2,9 @@ package model
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons"
+	"encoding/xml"
 	"net/http"
-	"time"
 )
 
 /*  <request type=”mrct_BonusTransaction”>
@@ -42,20 +41,22 @@ type Item struct {
 }
 
 type BonusRequest struct {
-	CustomRequest
-	SessionId  string    `json:"sessionId"  xml:"sessionId"`
-	Amount     int       `json:"amount"     xml:"amount"`
-	CommitType int       `json:"commitType" xml:"commitType"`
-	Date       time.Time `json:"date"       xml:"date"`
-	Ref        string    `json:"ref"        xml:"ref"`
-	CheckId    string    `json:"checkId"    xml:"checkId"`
-	Terminal   int       `json:"terminal"   xml:"terminal"`
-	Card       string    `json:"card"       xml:"card"`
-	SecCode    string    `json:"secCode"    xml:"secCode"`
-	Pin        string    `json:"pin"        xml:"pin"`
-	BonusesPay int       `json:"bonusesPay" xml:"bonusesPay"`
-	BonusesAcc int       `json:"bonuses"    xml:"bonuses"`
-	Items      []Item    `json:"items"      xml:"items"`
+CustomRequest
+	SessionId  string     `json:"sessionId"  xml:"sessionId"`
+	Amount     int        `json:"amount"     xml:"amount"`
+	CommitType int        `json:"commitType" xml:"commitType"`
+	Date       CustomTime `json:"date"       xml:"date"`
+	Ref        string     `json:"ref"        xml:"ref"`
+	CheckId    string     `json:"checkId"    xml:"checkId"`
+	Terminal   int        `json:"terminal"   xml:"terminal"`
+	Card       string     `json:"card"       xml:"card"`
+	CellPhone  string     `json:"cellPhone"  xml:"cellPhone"`
+	SecCode    string     `json:"secCode"    xml:"secCode"`
+	Pin        string     `json:"pin"        xml:"pin"`
+	BonusesPay int        `json:"bonusesPay" xml:"bonusesPay"`
+	NeedCommit int        `json:"needCommit" xml:"needCommit"`
+	BonusesAcc int        `json:"bonuses"    xml:"bonuses"`
+	Items      []Item    ` json:"items"      xml:"items"`
 }
 
 type BonusResponse struct {
@@ -86,6 +87,8 @@ func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
 		return req, xml.Unmarshal(b, &req)
 	}
 
+	err := json.Unmarshal(b, &req)
+	return req, err
 }
 
 func (req *BonusRequest) IsPayment() bool {
