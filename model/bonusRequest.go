@@ -2,7 +2,8 @@ package model
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"encoding/xml"
+	"git.kopilka.kz/BACKEND/golang_commons"
 	"net/http"
 	"time"
 )
@@ -32,53 +33,59 @@ import (
 *   </response>*/
 
 type Item struct {
-	Id        string `json:"id"`
-	IdInCheck int    `json:"idInCheck"`
-	Quantity  int    `json:"quantity"`
-	Price     int    `json:"price"`
-	Amount    int    `json:"amount"`
-	Bonus     int    `json:"bonus"`
+	Id        string `json:"id"        xml:"id"`
+	IdInCheck int    `json:"idInCheck" xml:"idInCheck"`
+	Quantity  int    `json:"quantity"  xml:"quantity"`
+	Price     int    `json:"price"     xml:"price"`
+	Amount    int    `json:"amount"    xml:"amount"`
+	Bonus     int    `json:"bonus"     xml:"bonus"`
 }
 
 type BonusRequest struct {
-	Type       string    `json:"type"`
-	SessionId  string    `json:"sessionId"`
-	Amount     int       `json:"amount"`
-	CommitType int       `json:"commitType"`
-	Date       time.Time `json:"date"`
-	Ref        string    `json:"ref"`
-	CheckId    string    `json:"checkId"`
-	Terminal   int       `json:"terminal"`
-	Card       string    `json:"card"`
-	SecCode    string    `json:"secCode"`
-	Pin        string    `json:"pin"`
-	BonusesPay int       `json:"bonusesPay"`
-	BonusesAcc int       `json:"bonusesAccumulate"`
-	Items      []Item    `json:"items"`
+	CustomRequest
+	SessionId  string    `json:"sessionId"  xml:"sessionId"`
+	Amount     int       `json:"amount"     xml:"amount"`
+	CommitType int       `json:"commitType" xml:"commitType"`
+	Date       time.Time `json:"date"       xml:"date"`
+	Ref        string    `json:"ref"        xml:"ref"`
+	CheckId    string    `json:"checkId"    xml:"checkId"`
+	Terminal   int       `json:"terminal"   xml:"terminal"`
+	Card       string    `json:"card"       xml:"card"`
+	SecCode    string    `json:"secCode"    xml:"secCode"`
+	Pin        string    `json:"pin"        xml:"pin"`
+	BonusesPay int       `json:"bonusesPay" xml:"bonusesPay"`
+	BonusesAcc int       `json:"bonuses"    xml:"bonuses"`
+	Items      []Item    `json:"items"      xml:"items"`
 }
 
-func ParseReqByte(r *http.Request) ([]byte, error) {
-	b, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
-	return b, err
+type BonusResponse struct {
+	CustomResponse
+	TransactionId     string `json:"transactionId"     xml:"transactionId"`
+	ResultBonusAmount int    `json:"resultBonusAmount" xml:"resultBonusAmount"`
+	ClientName        string `json:"clientName"        xml:"clientName"`
+	TokenCount        int    `json:"tokenCount"        xml:"tokenCount"`
+	Discount          int    `json:"discount"          xml:"discount"`
+	ReqChallenge      string `json:"reqChallenge"      xml:"reqChallenge"`
 }
 
 func ParseBonusRequest(r *http.Request) (BonusRequest, error) {
-	b, err := ParseReqByte(r)
-	var req BonusRequest
+	b, err := golang_commons.ParseReqByte(r)
 	if err != nil {
-		return req, err
+		return BonusRequest{}, err
 	}
 
-	err = json.Unmarshal(b, &req)
-	return req, err
+	return RequestFromBytes(b, golang_commons.GetFormatByRequiest(r))
 }
 
-func RequestFromBytes(b []byte) (BonusRequest, error) {
+func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
 	var req BonusRequest
+	switch format {
+	case "json":
+		return req, json.Unmarshal(b, &req)
+	default:
+		return req, xml.Unmarshal(b, &req)
+	}
 
-	err := json.Unmarshal(b, &req)
-	return req, err
 }
 
 func (req *BonusRequest) IsPayment() bool {

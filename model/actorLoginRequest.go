@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"git.kopilka.kz/BACKEND/golang_commons"
 	"net/http"
 )
 
@@ -36,7 +37,7 @@ type ActorCheckSessionRequest struct {
 }
 
 func ParseActorLoginRequest(r *http.Request) (ActorLoginRequest, error) {
-	b, err := ParseReqByte(r)
+	b, err := golang_commons.ParseReqByte(r)
 	var req ActorLoginRequest
 	if err != nil {
 		return req, err
@@ -47,7 +48,7 @@ func ParseActorLoginRequest(r *http.Request) (ActorLoginRequest, error) {
 }
 
 func ParseActorCheckSessionRequest(r *http.Request) (ActorCheckSessionRequest, error) {
-	b, err := ParseReqByte(r)
+	b, err := golang_commons.ParseReqByte(r)
 	var req ActorCheckSessionRequest
 	if err != nil {
 		return req, err
