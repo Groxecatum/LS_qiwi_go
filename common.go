@@ -7,6 +7,20 @@ import (
 	"net/http"
 )
 
+const (
+	TYPE_XML  = "xml"
+	TYPE_JSON = "json"
+)
+
+func GetFormatByRequiest(r *http.Request) string {
+	format := TYPE_XML
+	if r.Header.Get("Content-Type") == "application/json" {
+		format = TYPE_JSON
+	}
+
+	return format
+}
+
 func ParseReqByte(r *http.Request) ([]byte, error) {
 	b, err := ioutil.ReadAll(r.Body)
 	return b, err

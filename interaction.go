@@ -70,29 +70,30 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 	return cli, err
 }
 
-func SendObjectJSON(obj interface{}, url, path string) ([]byte, error) {
+func SendObjectJSON(obj interface{}, url, path string) (int, []byte, error) {
 	hc := http.Client{}
 	b, err := json.Marshal(obj)
 	if err != nil {
-		return []byte{}, err
+		return 0, []byte{}, err
 	}
 
 	req, err := http.NewRequest("POST", url+path, strings.NewReader(string(b)))
 	if err != nil {
-		return []byte{}, err
+		return 0, []byte{}, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := hc.Do(req)
 	if err != nil {
-		return []byte{}, err
+		return 0, []byte{}, err
 	}
 
+	code := resp.StatusCode
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 
 	log.Println("Sending object answer: " + string(respBody))
 
-	return respBody, err
+	return code, respBody, err
 }
