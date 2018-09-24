@@ -6,8 +6,7 @@ import (
 )
 
 /*  <request type=”mrct_OpenSalesPointSession”>
-      <login>[логин]</login>
-	  <psw>[пароль]</psw>
+      <sessionId>[Идентификатор сессии точки продаж]</sessionId> ( ИЛИ <login>[логин]</login><psw>[пароль]</psw> )
       <deviceId>[идентификатор устройства]</deviceId>
       <pushtoken>[пуш токен]</pushtoken>
     </request>
@@ -17,6 +16,7 @@ import (
 *   </response>*/
 
 type ActorLoginRequest struct {
+	SessionId string `json:"sessionId"`
 	Login     string `json:"login"`
 	Password  string `json:"psw"`
 	DeviceId  string `json:"deviceId"`
