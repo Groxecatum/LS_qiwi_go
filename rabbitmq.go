@@ -1,7 +1,6 @@
 package golang_commons
 
 import (
-	"fmt"
 	"github.com/streadway/amqp"
 	"log"
 )
@@ -9,8 +8,7 @@ import (
 type RMQHandlerFunc func(delivery amqp.Delivery) error
 
 func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
-	addr := fmt.Sprint("amqp://", rabbitMQUser, ":", rabbitMQPassword, "@", rabbitMQUrl)
-	conn, err := amqp.Dial(addr)
+	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + "@" + rabbitMQUrl)
 	if err != nil {
 		return err
 	}
@@ -38,7 +36,9 @@ func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl
 
 func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
 	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + " + @" + rabbitMQUrl + "/")
-	FailOnError(err, "Failed to connect to RabbitMQ")
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
