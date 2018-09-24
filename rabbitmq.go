@@ -83,4 +83,5 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 			ch.Ack(d.DeliveryTag, false)
 		}
 	}()
+	return nil
 }
