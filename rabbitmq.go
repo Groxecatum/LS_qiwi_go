@@ -8,12 +8,12 @@ import (
 
 type RMQHandlerFunc func(delivery amqp.Delivery) error
 
-// FailOnError обоснован? или нет? с одной стороны - не может достучаться до рэббита - значит, не работает
 func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
 	addr := fmt.Sprint("amqp://", rabbitMQUser, ":", rabbitMQPassword, "@", rabbitMQUrl)
 	conn, err := amqp.Dial(addr)
-	FailOnError(err, "Failed to connect to RabbitMQ")
-
+	if err != nil {
+		return err
+	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
@@ -21,14 +21,19 @@ func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(queue, true, false, false, false, nil)
-	FailOnError(err, "Failed to declare a queue")
+	if err != nil {
+		return err
+	}
 
 	err = ch.Publish("", q.Name, false, false,
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        b,
 		})
-	FailOnError(err, "Failed to publish a message")
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
@@ -37,7 +42,9 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 	defer conn.Close()
 
 	ch, err := conn.Channel()
-	FailOnError(err, "Failed to open a channel")
+	if err != nil {
+		return err
+	}
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
@@ -48,7 +55,9 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 		false, // no-wait
 		nil,   // arguments
 	)
-	FailOnError(err, "Failed to declare a queue")
+	if err != nil {
+		return err
+	}
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
@@ -58,13 +67,16 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 		false,  // no-wait
 		nil,    // args
 	)
-	FailOnError(err, "Failed to register a consumer")
+	if err != nil {
+		return err
+	}
 
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
 			err = handler(d)
 			if err != nil {
+				log.Printf("Error: %s", err)
 				ch.Reject(d.DeliveryTag, false)
 			}
 
