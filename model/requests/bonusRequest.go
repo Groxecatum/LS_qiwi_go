@@ -1,9 +1,10 @@
-package model
+package requests
 
 import (
 	"encoding/json"
 	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/model/entities"
 	"net/http"
 )
 
@@ -31,43 +32,36 @@ import (
       <resultBonusAmount>[сумма бонусов, которая предполагается на счете после операции]<resultBonusAmount>
 *   </response>*/
 
-type Item struct {
-	Id        string `json:"id"        xml:"id"`
-	IdInCheck int    `json:"idInCheck" xml:"idInCheck"`
-	Quantity  int    `json:"quantity"  xml:"quantity"`
-	Price     int    `json:"price"     xml:"price"`
-	Amount    int    `json:"amount"    xml:"amount"`
-	Bonus     int    `json:"bonus"     xml:"bonus"`
-}
-
 type BonusRequest struct {
 	CustomRequest
-	SessionId       string     `json:"sessionId"        xml:"sessionId"`
-	Amount          int        `json:"amount"           xml:"amount"`
-	CommitType      int        `json:"commitType"       xml:"commitType"`
-	Date            CustomTime `json:"date"             xml:"date"`
-	Ref             string     `json:"ref"              xml:"ref"`
-	CheckId         string     `json:"checkId"          xml:"checkId"`
-	Descr           string     `json:"description"      xml:"description"`
-	Terminal        int        `json:"terminal"         xml:"terminal"`
-	Card            string     `json:"card"             xml:"card"`
-	CellPhone       string     `json:"cellPhone"        xml:"cellPhone"`
-	SecCode         string     `json:"secCode"          xml:"secCode"`
-	Pin             string     `json:"pin"              xml:"pin"`
-	BonusesPay      int        `json:"bonusAmountToPay" xml:"bonusAmountToPay"`
-	NeedCommit      int        `json:"needCommit"       xml:"needCommit"`
-	BonusesAcc      int        `json:"bonusAmount"      xml:"bonusAmount"`
-	SecureHashCode  string     `json:"bonuses"          xml:"bonuses"`
-	SecureShortCode string     `json:"bonuses"          xml:"bonuses"`
-	Items           []Item     `json:"items"            xml:"items"`
-	ZRepId          string     `json:"zRepId"           xml:"zRepId"`
-	BatchPeriodId   string     `json:"batchPeriodId"    xml:"batchPeriodId"`
+	SessionId       string              `json:"sessionId"        xml:"sessionId"`
+	Login           string              `json:"login"            xml:"login"`
+	Password        string              `json:"psw"              xml:"psw"`
+	Amount          int64               `json:"amount"           xml:"amount"`
+	CommitType      int                 `json:"commitType"       xml:"commitType"`
+	Date            entities.CustomTime `json:"date"             xml:"date"`
+	Ref             string              `json:"ref"              xml:"ref"`
+	CheckId         string              `json:"checkId"          xml:"checkId"`
+	Descr           string              `json:"description"      xml:"description"`
+	Terminal        int                 `json:"terminal"         xml:"terminal"`
+	Card            string              `json:"card"             xml:"card"`
+	CellPhone       string              `json:"cellPhone"        xml:"cellPhone"`
+	SecCode         string              `json:"secCode"          xml:"secCode"`
+	Pin             string              `json:"pin"              xml:"pin"`
+	BonusesPay      int64               `json:"bonusAmountToPay" xml:"bonusAmountToPay"`
+	NeedCommit      int                 `json:"needCommit"       xml:"needCommit"`
+	BonusesAcc      int64               `json:"bonusAmount"      xml:"bonusAmount"`
+	SecureHashCode  string              `json:"bonuses"          xml:"bonuses"`
+	SecureShortCode string              `json:"bonuses"          xml:"bonuses"`
+	Items           []entities.TrnItem  `json:"items"            xml:"items"`
+	ZRepId          string              `json:"zRepId"           xml:"zRepId"`
+	BatchPeriodId   string              `json:"batchPeriodId"    xml:"batchPeriodId"`
 }
 
 type BonusResponse struct {
 	CustomResponse
-	TransactionId     string `json:"transactionId"     xml:"transactionId"`
-	ResultBonusAmount int    `json:"resultBonusAmount" xml:"resultBonusAmount"`
+	TransactionId     int64  `json:"transactionId"     xml:"transactionId"`
+	ResultBonusAmount int64  `json:"resultBonusAmount" xml:"resultBonusAmount"`
 	ClientName        string `json:"clientName"        xml:"clientName"`
 	TokenCount        int    `json:"tokenCount"        xml:"tokenCount"`
 	Discount          int    `json:"discount"          xml:"discount"`
