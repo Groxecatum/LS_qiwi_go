@@ -1,4 +1,4 @@
-package model
+package requests
 
 type GetBalanceRequest struct {
 	UserId int `json:"user_id"`

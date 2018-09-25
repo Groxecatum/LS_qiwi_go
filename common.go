@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -38,4 +39,8 @@ func Invert(b []byte) []byte {
 		b[i], b[j] = b[j], b[i]
 	}
 	return b
+}
+
+func GetFullReference(Date time.Time, ref string, actorId int) {
+
 }

@@ -3,6 +3,7 @@ package golang_commons
 import (
 	"encoding/json"
 	"encoding/xml"
+	commonModel "git.kopilka.kz/BACKEND/golang_commons/model/entities"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,7 +14,7 @@ const ClientBySessionServlet = "msrv/msrv_GetClientBySession"
 const ActorBySessionServlet = "msrv/msrv_GetActorBySession"
 
 //Данные клиента по сессии
-func ClientFromSession(sessionId, LSUrl, LSPath string) (Client, error) {
+func ClientFromSession(sessionId, LSUrl, LSPath string) (commonModel.Client, error) {
 	hc := http.Client{}
 
 	body := "<request frontEnd=\"web\" type=\"" + ClientBySessionServlet + "\"><sessionId>" + sessionId + "</sessionId></request>"
@@ -26,7 +27,7 @@ func ClientFromSession(sessionId, LSUrl, LSPath string) (Client, error) {
 
 	resp, err := hc.Do(req)
 	if err != nil {
-		return Client{}, err
+		return commonModel.Client{}, err
 	}
 
 	defer resp.Body.Close()
@@ -34,14 +35,14 @@ func ClientFromSession(sessionId, LSUrl, LSPath string) (Client, error) {
 
 	log.Println("Client from session answer: " + string(respBody))
 
-	cli := Client{}
+	cli := commonModel.Client{}
 	err = xml.Unmarshal(respBody, &cli)
 
 	return cli, err
 }
 
 //Данные клиента по сессии
-func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
+func ActorFromSession(sessionId, LSUrl, LSPath string) (commonModel.Actor, error) {
 	hc := http.Client{}
 
 	body := "<request frontEnd=\"web\" type=\"" + ActorBySessionServlet + "\"><sessionId>" + sessionId + "</sessionId></request>"
@@ -49,14 +50,14 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 		strings.NewReader(body))
 	if err != nil {
 		log.Println("Error getting user for session " + sessionId)
-		return Actor{}, err
+		return commonModel.Actor{}, err
 	}
 
 	req.Header.Add("Content-Type", "application/xml")
 
 	resp, err := hc.Do(req)
 	if err != nil {
-		return Actor{}, err
+		return commonModel.Actor{}, err
 	}
 
 	defer resp.Body.Close()
@@ -64,7 +65,7 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (Actor, error) {
 
 	log.Println("Actor from session answer: " + string(respBody))
 
-	cli := Actor{}
+	cli := commonModel.Actor{}
 	err = xml.Unmarshal(respBody, &cli)
 
 	return cli, err
