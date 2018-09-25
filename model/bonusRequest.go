@@ -80,7 +80,7 @@ func ParseBonusRequest(r *http.Request) (BonusRequest, error) {
 		return BonusRequest{}, err
 	}
 
-	return RequestFromBytes(b, golang_commons.GetFormatByRequiest(r))
+	return RequestFromBytes(b, golang_commons.GetFormatByRequest(r))
 }
 
 func RequestFromBytes(b []byte, format string) (BonusRequest, error) {

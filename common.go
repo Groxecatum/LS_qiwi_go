@@ -12,7 +12,7 @@ const (
 	TYPE_JSON = "json"
 )
 
-func GetFormatByRequiest(r *http.Request) string {
+func GetFormatByRequest(r *http.Request) string {
 	format := TYPE_XML
 	if r.Header.Get("Content-Type") == "application/json" {
 		format = TYPE_JSON
