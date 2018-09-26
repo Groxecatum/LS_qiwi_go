@@ -51,7 +51,7 @@ func GetAuthorizedActor(sessionId, login, psw, authCacheHost, authCachePath stri
 }
 
 func CheckBalance(cardNum string, bonuses int, balanceCacheHost, balanceCachePath string) (bool, error) {
-	balanceReq := BalanceCheckRequest{CardNum: cardNum, Bonuses: bonuses}
+	balanceReq := ActorCheckSessionRequest{SessionId: ""} //BalanceCheckRequest{CardNum: cardNum, Bonuses: bonuses}
 
 	code, resp, err := golang_commons.SendObjectJSON(balanceReq, balanceCacheHost, balanceCachePath)
 	if err != nil {

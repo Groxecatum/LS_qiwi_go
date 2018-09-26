@@ -91,5 +91,5 @@ func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
 }
 
 func (req *BonusRequest) IsPayment() bool {
-	return false
+	return req.Pin != "" && req.Type == "mrct_PayTransaction"
 }

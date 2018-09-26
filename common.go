@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,6 +42,6 @@ func Invert(b []byte) []byte {
 	return b
 }
 
-func GetFullReference(Date time.Time, ref string, actorId int) {
-
+func GetFullReference(date time.Time, ref string, actorId int) string {
+	return date.Format("yyMMddHHmmss") + ref + strconv.Itoa(actorId)
 }
