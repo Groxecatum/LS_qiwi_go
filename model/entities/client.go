@@ -6,6 +6,7 @@ type Client struct {
 	Id           int
 	IsRegistered bool
 	FirstName    string
+	CellPhone    string
 }
 
 func GetClientById(tx *sql.Tx, id int) (*Client, error) {

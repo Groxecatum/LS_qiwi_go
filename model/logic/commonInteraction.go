@@ -1,4 +1,4 @@
-package golang_commons
+package logic
 
 import (
 	"encoding/json"

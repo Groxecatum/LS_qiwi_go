@@ -3,8 +3,9 @@ package entities
 import "database/sql"
 
 type Merchant struct {
-	Id                int
-	CreateVirtualUser bool
+	Id                 int
+	CreateVirtualUser  bool
+	AllowPayWithoutPin bool
 }
 
 func GetMerchantById(tx *sql.Tx, id int) (*Merchant, error) {
