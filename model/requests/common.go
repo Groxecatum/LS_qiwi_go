@@ -50,7 +50,7 @@ func GetAuthorizedActor(sessionId, login, psw, authCacheHost, authCachePath stri
 	return responseStruct, nil
 }
 
-func CheckBalance(cardNum string, bonuses int, balanceCacheHost, balanceCachePath string) (bool, error) {
+func CheckBalance(cardNum string, bonuses int64, balanceCacheHost, balanceCachePath string) (bool, error) {
 	balanceReq := ActorCheckSessionRequest{SessionId: ""} //BalanceCheckRequest{CardNum: cardNum, Bonuses: bonuses}
 
 	code, resp, err := logic.SendObjectJSON(balanceReq, balanceCacheHost, balanceCachePath)
