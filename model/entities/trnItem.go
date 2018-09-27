@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"database/sql"
 	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons"
 	"github.com/jmoiron/sqlx"
@@ -47,7 +46,7 @@ func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns
 	return amount
 }
 
-func (item *TrnItem) save() error {
+func (item *TrnItem) save(tx *sqlx.Tx) error {
 	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		rows, err := tx.Query("INSERT INTO ls.tsrctransactionitems "+
 			" (bitransactionid, sitemsid, sitemname, nitemquantity, npriceperitem, "+
@@ -63,7 +62,7 @@ func (item *TrnItem) save() error {
 		}
 
 		return nil, err
-	}, nil)
+	}, tx)
 	return err
 }
 
@@ -79,10 +78,10 @@ func SetTrnId(list []TrnItem, id int64) {
 	}
 }
 
-func SaveTrnItems(tx *sql.Tx, list []TrnItem) error {
+func SaveTrnItems(tx *sqlx.Tx, list []TrnItem) error {
 	var err error
 	for _, item := range list {
-		err := item.save()
+		err := item.save(tx)
 		if err != nil {
 			break
 		}

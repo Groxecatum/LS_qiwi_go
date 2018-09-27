@@ -5,6 +5,7 @@ import (
 	"git.kopilka.kz/BACKEND/golang_commons"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"log"
 	"math/rand"
 	"strconv"
@@ -140,7 +141,7 @@ func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool
 		crd := Card{}
 		acc := Account{}
 
-		rows, err := tx.Query("INSERT INTO ls.tCardAccounts (nBonuses, nBlockedBonuses, btest) VALUES (0.0, 0.0, $1) RETURNING iID;", num)
+		rows, err := tx.Query("INSERT INTO ls.tCardAccounts (nBonuses, nBlockedBonuses, btest) VALUES (0.0, 0.0, $1) RETURNING iID;", test)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -153,58 +154,38 @@ func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool
 				return crd, err
 			}
 		}
+		dtbound := pq.NullTime{Time: time.Now(), Valid: true}
+		if !virtual {
+			dtbound = pq.NullTime{Time: time.Now(), Valid: false}
+		}
+		rows, err = tx.Query(`INSERT INTO ls.tCards (sCardNum, dtExpired, bBlocked, bTemporary, btest, sCVC, 
+									    	iclientid, bvirtual, dtbound) 
+									  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING iID;`, num, expDate, blocked, temp,
+			test, cvc, clientId, virtual, dtbound)
+		if err != nil {
+			log.Println(err)
+			return crd, err
+		}
+
+		if rows.Next() {
+			err := rows.Scan(&crd.Id)
+			if err != nil {
+				log.Println(err)
+				return crd, err
+			}
+		}
+
+		_, err = tx.Exec(`INSERT INTO ls.tcardaccounts_cards (icardid, icardaccid) VALUES ($1, $2) RETURNING iid;`,
+			crd.Id, clientId)
+		if err != nil {
+			log.Println(err)
+			return crd, err
+		}
 
 		return nil, err
 	}, tx)
 
 	return err
-	//new VoidSqlCallbackExecutor((conn, stmt, rs) -> {
-
-	//	Pattern pattern = Pattern.compile("^[0-9]{13}$");
-	//	Matcher matcher = pattern.matcher(cardNumber);
-	//	if (!matcher.matches()) {
-	//		throw new CardNumberFormatException(cardNumber);
-	//	}
-	//
-	//	stmt = conn.prepareStatement("INSERT INTO ls.tCardAccounts (nBonuses, nBlockedBonuses, btest) VALUES (0.0, 0.0, ?) RETURNING iID;");
-	//	stmt.setBoolean(1, test);
-	//	rs = stmt.executeQuery();
-	//	if (!rs.next()) {
-	//		throw new SimpleException(cardNumber.concat("card account has not created!"));
-	//	}
-	//	int cardAccID = rs.getInt(1);
-	//	stmt.close();
-	//
-	//	stmt = conn.prepareStatement("INSERT INTO ls.tCards (sCardNum, dtExpired, bBlocked, bTemporary, btest, sCVC, iclientid, bvirtual, dtbound) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING iID;");
-	//	stmt.setString(1, cardNumber);
-	//	java.sql.Date dt = new java.sql.Date(expDate.getTime());
-	//	stmt.setDate(2, dt);
-	//	stmt.setBoolean(3, blocked);
-	//	stmt.setBoolean(4, temporary);
-	//	stmt.setBoolean(5, test);
-	//	stmt.setString(6, CVC);
-	//	stmt.setInt(7, clientId);
-	//	stmt.setBoolean(8, virtual == null ? false : virtual);
-	//	if (virtual == null ? false : virtual){
-	//		stmt.setTimestamp(9,new Timestamp(new Date().getTime()));
-	//	} else {
-	//		stmt.setNull(9,Types.TIMESTAMP);
-	//	}
-	//	rs = stmt.executeQuery();
-	//	if (!rs.next()) {
-	//		throw new SimpleException(cardNumber.concat("Card has not been bound!"));
-	//	}
-	//	int cardID = rs.getInt(1);
-	//	stmt.close();
-	//
-	//	stmt = conn.prepareStatement("INSERT INTO ls.tcardaccounts_cards (icardid, icardaccid) VALUES (?, ?) RETURNING iid;");
-	//	stmt.setInt(1, cardID);
-	//	stmt.setInt(2, cardAccID);
-	//	rs = stmt.executeQuery();
-	//	if (!rs.next()) {
-	//		throw new SimpleException(cardNumber.concat("Realtions Card <-> Account has not been created!"));
-	//	}
-	//}, extConn).execute();
 }
 
 func GenerateCardOnline(tx *sqlx.Tx, virtual bool, clientId int) error {
