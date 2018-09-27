@@ -11,3 +11,12 @@ type GetBalanceResponse struct {
 type UpdateBalanceRequest struct {
 	UserId int `json:"user_id"`
 }
+
+type CheckBalanceRequest struct {
+	CardNum string  `json:"card_num"`
+	Balance float32 `json:"balance"`
+}
+
+type CheckBalanceResponse struct {
+	Result bool `json:"result"`
+}
