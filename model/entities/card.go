@@ -1,10 +1,10 @@
 package entities
 
 import (
-	"database/sql"
 	"fmt"
 	"git.kopilka.kz/BACKEND/golang_commons"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"math/rand"
 	"strconv"
@@ -12,8 +12,8 @@ import (
 )
 
 type Card struct {
-	Id       int
-	ClientId int
+	Id       int `db:"iid"`
+	ClientId int `db:"iclientid"`
 }
 
 type GeneratedCard struct {
@@ -21,43 +21,21 @@ type GeneratedCard struct {
 	CVC     string
 }
 
-func getAllCardFields() string {
-	return " iid, iclientid "
-}
-
-func cardFromRows(rows *sql.Rows) (Card, error) {
-	crd := Card{}
-	err := rows.Scan(&crd.Id, &crd.ClientId)
-	return crd, err
-}
-
-func GetCardById(tx *sql.Tx, id int) (Card, error) {
-	res, err := golang_commons.Do(func(tx *sql.Tx) (interface{}, error) {
-		card := Card{}
-		rows, err := tx.Query("select "+getAllActorFields()+" from ls.tcards where iid = $1", id)
-
+func GetCardById(tx *sqlx.Tx, id int) (Card, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		crd := Actor{}
+		err := tx.Get(&crd, `select * from ls.tcards where iid = $1`, id)
 		if err != nil {
 			log.Println(err)
-			return card, err
-		}
-		defer rows.Close()
-
-		if rows.Next() {
-			card, err = cardFromRows(rows)
-			if err != nil {
-				log.Println(err)
-				return card, err
-			}
-		} else {
-			return card, errors.AuthErr
+			return crd, err
 		}
 
-		return card, err
+		return crd, err
 	}, tx)
 	return res.(Card), err
 }
 
-func (crd *Card) GetClient(tx *sql.Tx) (*Client, error) {
+func (crd *Card) GetClient(tx *sqlx.Tx) (Client, error) {
 	return GetClientById(tx, crd.ClientId)
 }
 
@@ -68,8 +46,8 @@ func ExtractCardNum(fullNum string) (string, error) {
 	return fullNum[0:13], nil
 }
 
-func getLastCardId(tx *sql.Tx) (int, error) {
-	res, err := golang_commons.Do(func(tx *sql.Tx) (interface{}, error) {
+func getLastCardId(tx *sqlx.Tx) (int, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		id := ""
 		rows, err := tx.Query("SELECT max(sCardNum) FROM ls.tcards")
 
@@ -157,7 +135,29 @@ func getExpDate(from time.Time) time.Time {
 	return from.AddDate(2, 0, 0)
 }
 
-func createCard(tx *sql.Tx, num string, expDate time.Time, temp bool, test bool, cvc string, clientId int, virtual bool, blocked bool) error {
+func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool, cvc string, clientId int, virtual bool, blocked bool) error {
+	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		crd := Card{}
+		acc := Account{}
+
+		rows, err := tx.Query("INSERT INTO ls.tCardAccounts (nBonuses, nBlockedBonuses, btest) VALUES (0.0, 0.0, $1) RETURNING iID;", num)
+		if err != nil {
+			log.Println(err)
+			return crd, err
+		}
+
+		if rows.Next() {
+			err := rows.Scan(&acc.Id)
+			if err != nil {
+				log.Println(err)
+				return crd, err
+			}
+		}
+
+		return nil, err
+	}, tx)
+
+	return err
 	//new VoidSqlCallbackExecutor((conn, stmt, rs) -> {
 
 	//	Pattern pattern = Pattern.compile("^[0-9]{13}$");
@@ -207,7 +207,7 @@ func createCard(tx *sql.Tx, num string, expDate time.Time, temp bool, test bool,
 	//}, extConn).execute();
 }
 
-func GenerateCardOnline(tx *sql.Tx, virtual bool, clientId int) error {
+func GenerateCardOnline(tx *sqlx.Tx, virtual bool, clientId int) error {
 	gc, err := generateNew()
 	if err != nil {
 		return err
@@ -217,32 +217,20 @@ func GenerateCardOnline(tx *sql.Tx, virtual bool, clientId int) error {
 	return err
 }
 
-func GetCardByNum(tx *sql.Tx, num string, blockForUpdate bool) (Card, error) {
-	res, err := golang_commons.Do(func(tx *sql.Tx) (interface{}, error) {
-		card := Card{}
+func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		crd := Card{}
 		forUpdStr := ""
 		if blockForUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		rows, err := tx.Query("select "+getAllActorFields()+" from ls.tcards where iid = $1"+forUpdStr, num)
-
+		err := tx.Get(&crd, "select * from ls.tcards where iid = $1"+forUpdStr, num)
 		if err != nil {
 			log.Println(err)
-			return card, err
-		}
-		defer rows.Close()
-
-		if rows.Next() {
-			card, err = cardFromRows(rows)
-			if err != nil {
-				log.Println(err)
-				return card, err
-			}
-		} else {
-			return card, errors.AuthErr
+			return crd, err
 		}
 
-		return card, err
+		return crd, err
 	}, tx)
 	return res.(Card), err
 }

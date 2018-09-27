@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -47,7 +48,7 @@ func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns
 }
 
 func (item *TrnItem) save() error {
-	_, err := golang_commons.Do(func(tx *sql.Tx) (interface{}, error) {
+	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		rows, err := tx.Query("INSERT INTO ls.tsrctransactionitems "+
 			" (bitransactionid, sitemsid, sitemname, nitemquantity, npriceperitem, "+
 			"  isactual, bitrnrequestid, nitemquantitychange, nbonusamount, "+

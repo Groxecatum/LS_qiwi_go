@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -23,7 +23,7 @@ type TransactionRequest struct {
 	TransactionId int64
 }
 
-func GetTransactionRequestById(tx *sql.Tx, id int64) (*TransactionRequest, error) {
+func GetTransactionRequestById(tx *sqlx.Tx, id int64) (*TransactionRequest, error) {
 	return nil, nil
 }
 
@@ -31,7 +31,7 @@ func GetByRefUnified() (*TransactionRequest, error) {
 	return nil, nil
 }
 
-func CreateNewTransactionRequest(tx *sql.Tx, trnType int, trnId int64, merchantId int, merchantTerminalId int,
+func CreateNewTransactionRequest(tx *sqlx.Tx, trnType int, trnId int64, merchantId int, merchantTerminalId int,
 	actorId int, descr string, ref string, fullRef string, date time.Time, requestId *int64, zRepId string, commitState int,
 	checkId string, batchPeriodId string, cardId *int, acceptorMerchantId *int, acceptorActorId *int) (TransactionRequest, error) {
 	return TransactionRequest{}, nil

@@ -1,17 +1,42 @@
 package entities
 
-import "database/sql"
+import (
+	"git.kopilka.kz/BACKEND/golang_commons"
+	"github.com/jmoiron/sqlx"
+	"log"
+)
 
 type Merchant struct {
-	Id                 int
-	CreateVirtualUser  bool
-	AllowPayWithoutPin bool
+	Id                 int  `db:"iid"`
+	CreateVirtualUser  bool `db:"bcreatevirtualuser"`
+	AllowPayWithoutPin bool `db:"ballowpaywithoutpin"`
 }
 
-func GetMerchantById(tx *sql.Tx, id int) (*Merchant, error) {
-	return nil, nil
+func GetMerchantById(tx *sqlx.Tx, id int) (Merchant, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		mrct := Merchant{}
+		err := tx.Get(&mrct, `select * from ls.tcards where iid = $1`, id)
+		if err != nil {
+			log.Println(err)
+			return mrct, err
+		}
+
+		return mrct, err
+	}, tx)
+	return res.(Merchant), err
 }
 
-func GetMerchantDataForTransaction(tx *sql.Tx, merchantId int) (Merchant, error) {
-	return Merchant{}, nil
+// без всяких жирных текстовых полей
+func GetMerchantDataForTransaction(tx *sqlx.Tx, merchantId int) (Merchant, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		mrct := Merchant{}
+		err := tx.Get(&mrct, `select iid, bcreatevirtualuser, ballowpaywithoutpin from ls.tmerchants where iid = $1`, merchantId)
+		if err != nil {
+			log.Println(err)
+			return mrct, err
+		}
+
+		return mrct, err
+	}, tx)
+	return res.(Merchant), err
 }

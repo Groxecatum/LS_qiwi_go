@@ -1,20 +1,22 @@
 package entities
 
-import "database/sql"
+import (
+	"github.com/jmoiron/sqlx"
+)
 
 type SecureHashCode struct {
 	Id     int64
 	CardId int
 }
 
-func GetSecureHashCodeById(tx sql.Tx, id int) {
+func GetSecureHashCodeById(tx sqlx.Tx, id int) {
 
 }
 
-func GetSecureHashCodeByShortCode(tx *sql.Tx, shortCode string) (SecureHashCode, error) {
+func GetSecureHashCodeByShortCode(tx *sqlx.Tx, shortCode string) (SecureHashCode, error) {
 	return SecureHashCode{}, nil
 }
 
-func GetSecureHashCodeByHash(tx *sql.Tx, secCode string) (SecureHashCode, error) {
+func GetSecureHashCodeByHash(tx *sqlx.Tx, secCode string) (SecureHashCode, error) {
 	return SecureHashCode{}, nil
 }
