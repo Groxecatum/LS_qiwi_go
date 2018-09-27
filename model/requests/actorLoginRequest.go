@@ -34,6 +34,8 @@ type ActorLoginRequest struct {
 
 type ActorCheckSessionRequest struct {
 	SessionId string `json:"sessionId"`
+	Login     string `json:"login"`
+	Password  string `json:"psw"`
 }
 
 func ParseActorLoginRequest(r *http.Request) (ActorLoginRequest, error) {

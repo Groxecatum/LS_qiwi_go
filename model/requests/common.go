@@ -9,7 +9,7 @@ import (
 )
 
 func CheckAuth(sessionId, login, psw, authCacheHost, authCachePath string) (bool, error) {
-	loginReq := ActorCheckSessionRequest{SessionId: sessionId}
+	loginReq := ActorCheckSessionRequest{SessionId: sessionId, Password: psw, Login: login}
 
 	code, resp, err := logic.SendObjectJSON(loginReq, authCacheHost, authCachePath)
 	if err != nil {

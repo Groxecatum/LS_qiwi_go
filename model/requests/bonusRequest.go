@@ -52,7 +52,7 @@ type BonusRequest struct {
 	BonusesAcc      int64               `json:"bonusAmount"      xml:"bonusAmount"`
 	SecureHashCode  string              `json:"secureHashCode"   xml:"secureHashCode"`
 	SecureShortCode string              `json:"secureShortCode"  xml:"secureShortCode"`
-	Items           []entities.TrnItem  `json:"items>item"       xml:"items>item"`
+	Items           []entities.TrnItem  `json:"items"            xml:"items>item"`
 	ZRepId          string              `json:"zRepId"           xml:"zRepId"`
 	BatchPeriodId   string              `json:"batchPeriodId"    xml:"batchPeriodId"`
 }
