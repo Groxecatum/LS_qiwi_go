@@ -6,9 +6,9 @@ import (
 )
 
 type SecurityEntry struct {
-	Id       int    `db:"iid"  xml:"id"`
-	Hash     string `db:"shash"  xml:"shash"`
-	Salt     string `db:"ssalt"  xml:"ssalt"`
+	Id       int    `db:"iid"         xml:"id"`
+	Hash     string `db:"shash"       xml:"shash"`
+	Salt     string `db:"ssalt"       xml:"ssalt"`
 	HashType int    `db:"sihashtype"  xml:"sihashtype"`
 }
 
@@ -21,7 +21,7 @@ const (
 func CreateNewSecurityEntry(tx *sqlx.Tx, secureValue *string, hashType int) (SecurityEntry, error) {
 
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
-
+		return SecurityEntry{}, nil
 	}, tx)
 
 	return res.(SecurityEntry), err
