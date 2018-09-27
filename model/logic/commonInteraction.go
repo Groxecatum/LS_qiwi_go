@@ -63,7 +63,7 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (commonModel.Actor, error
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 
-	log.Println("Actor from session answer: " + string(respBody))
+	//log.Println("Actor from session answer: " + string(respBody))
 
 	cli := commonModel.Actor{}
 	err = xml.Unmarshal(respBody, &cli)
@@ -94,7 +94,7 @@ func SendObjectJSON(obj interface{}, url, path string) (int, []byte, error) {
 	defer resp.Body.Close()
 	respBody, err := ioutil.ReadAll(resp.Body)
 
-	log.Println("Sending object answer: " + string(respBody))
+	//log.Println("Sending object answer: " + string(respBody))
 
 	return code, respBody, err
 }
