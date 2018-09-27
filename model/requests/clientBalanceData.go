@@ -14,7 +14,7 @@ type UpdateBalanceRequest struct {
 
 type CheckBalanceRequest struct {
 	CardNum string  `json:"card_num"`
-	Balance float32 `json:"balance"`
+	Balance float64 `json:"balance"`
 }
 
 type CheckBalanceResponse struct {
