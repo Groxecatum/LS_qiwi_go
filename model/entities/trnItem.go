@@ -12,15 +12,15 @@ const (
 )
 
 type TrnItem struct {
-	XMLName          xml.Name `xml:"item"`
-	ItemId           string   `json:"id"        xml:"id"`
-	ItemName         string   `json:"itemName"  xml:",chardata"`
-	IdInCheck        int      `json:"idInCheck" xml:"idInCheck"`
-	Quantity         int      `json:"quantity"  xml:"quantity"`
-	Price            int64    `json:"price"     xml:"price"`
-	Amount           int64    `json:"amount"    xml:"amount"`
-	TotalBonus       int64    `json:"totalBonusAmount"    xml:"totalBonusAmount"`
-	Bonus            int64    `json:"bonusAmount"     xml:"bonusAmount"`
+	XMLName   xml.Name `xml:"item"`
+	ItemId    string   `json:"id"        xml:"id,attr"`
+	IdInCheck int      `json:"idInCheck" xml:"idInCheck,attr"`
+	Quantity  float64  `json:"quantity"  xml:"quantity,attr"`
+	Price     float64  `json:"price"     xml:"price,attr"`
+	Amount    float64  `json:"amount"    xml:"amount,attr"`
+	//TotalBonus       int64  `json:"totalBonusAmount"    xml:"totalBonusAmount,attr"`
+	Bonus            float64 `json:"bonusAmount"     xml:"bonusAmount,attr"`
+	ItemName         string  `json:"itemName"  xml:",chardata"`
 	Id               int
 	Created          time.Time
 	IsActual         bool
@@ -30,18 +30,18 @@ type TrnItem struct {
 	SourceTerminalId int
 }
 
-func GetItemsOverallAmount(list []TrnItem) int64 {
-	var amount int64
+func GetItemsOverallAmount(list []TrnItem) float64 {
+	var amount float64
 	for _, item := range list {
 		amount += item.Amount
 	}
 	return amount
 }
 
-func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns bool) int64 {
-	var amount int64
+func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns bool) float64 {
+	var amount float64
 	for _, item := range list {
-		amount += item.TotalBonus
+		amount += item.Bonus //TotalBonus
 	}
 	return amount
 }
@@ -54,7 +54,7 @@ func (item *TrnItem) save(tx *sqlx.Tx) error {
 			"  nbonusamountchange, namount, namountchange, iidincheck, dtcreated, iAccountTypeId, isourceterminal) \n"+
 			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning biid",
 			item.TransactionId, item.ItemId, item.ItemName, item.Quantity, item.Price, item.IsActual, item.TrnRequestId,
-			item.Quantity, item.Bonus, item.TotalBonus, item.Amount, item.Amount, item.IdInCheck, item.Created, item.AccountTypeId,
+			item.Quantity, item.Bonus, item.Bonus, item.Amount, item.Amount, item.IdInCheck, item.Created, item.AccountTypeId,
 			item.SourceTerminalId)
 
 		if rows.Next() {

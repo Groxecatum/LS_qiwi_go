@@ -38,7 +38,6 @@ type BonusRequest struct {
 	Login           string              `json:"login"            xml:"login"`
 	Password        string              `json:"psw"              xml:"psw"`
 	Amount          int64               `json:"amount"           xml:"amount"`
-	CommitType      int                 `json:"commitType"       xml:"commitType"`
 	Date            entities.CustomTime `json:"date"             xml:"date"`
 	Ref             string              `json:"ref"              xml:"ref"`
 	CheckId         string              `json:"checkId"          xml:"checkId"`
@@ -51,9 +50,9 @@ type BonusRequest struct {
 	BonusesPay      int64               `json:"bonusAmountToPay" xml:"bonusAmountToPay"`
 	NeedCommit      int                 `json:"needCommit"       xml:"needCommit"`
 	BonusesAcc      int64               `json:"bonusAmount"      xml:"bonusAmount"`
-	SecureHashCode  string              `json:"bonuses"          xml:"bonuses"`
-	SecureShortCode string              `json:"bonuses"          xml:"bonuses"`
-	Items           []entities.TrnItem  `json:"items"            xml:"items"`
+	SecureHashCode  string              `json:"secureHashCode"   xml:"secureHashCode"`
+	SecureShortCode string              `json:"secureShortCode"  xml:"secureShortCode"`
+	Items           []entities.TrnItem  `json:"items>item"       xml:"items>item"`
 	ZRepId          string              `json:"zRepId"           xml:"zRepId"`
 	BatchPeriodId   string              `json:"batchPeriodId"    xml:"batchPeriodId"`
 }
@@ -85,9 +84,6 @@ func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
 	default:
 		return req, xml.Unmarshal(b, &req)
 	}
-
-	err := json.Unmarshal(b, &req)
-	return req, err
 }
 
 func (req *BonusRequest) IsPayment() bool {
