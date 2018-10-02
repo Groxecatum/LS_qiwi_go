@@ -12,7 +12,3 @@ type CheckBalanceRequest struct {
 	CardNum string  `json:"card_num"`
 	Balance float64 `json:"balance"`
 }
-
-type CheckBalanceResponse struct {
-	Result bool `json:"result"`
-}
