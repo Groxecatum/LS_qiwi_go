@@ -18,7 +18,7 @@ type Client struct {
 func GetClientById(tx *sqlx.Tx, id int) (Client, error) {
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
-		err := tx.Get(&cli, `select * from ls.tclients where iid = $1`, id)
+		err := tx.Get(&cli, `select iid, bisregistered, sfirstname, scellphone, dtregistered from ls.tclients where iid = $1`, id)
 		if err != nil {
 			log.Println(err)
 			return cli, err
@@ -62,6 +62,9 @@ func CreateEmptyClient(tx *sqlx.Tx, phone string) (Client, error) {
 			log.Println(err)
 			return cli, err
 		}
+
+		defer rows.Close()
+
 		if rows.Next() {
 			err := rows.Scan(&cli.Id, cli.DtRegistered)
 			if err != nil {
