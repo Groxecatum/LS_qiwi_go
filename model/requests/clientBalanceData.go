@@ -1,15 +1,11 @@
 package requests
 
 type GetBalanceRequest struct {
-	UserId int `json:"user_id"`
+	CardNum string `json:"card_num"`
 }
 
 type GetBalanceResponse struct {
-	Balance int `json:"balance"`
-}
-
-type UpdateBalanceRequest struct {
-	UserId int `json:"user_id"`
+	Balance float64 `json:"balance"`
 }
 
 type CheckBalanceRequest struct {
