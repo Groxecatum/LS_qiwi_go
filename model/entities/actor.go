@@ -26,3 +26,17 @@ func GetActorById(tx *sqlx.Tx, id int) (Actor, error) {
 	}, tx)
 	return res.(Actor), err
 }
+
+func GetActorByLogin(tx *sqlx.Tx, login string) (Actor, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		actor := Actor{}
+		err := tx.Get(&actor, `select * from ls.tactors where slogin = $1`, login)
+		if err != nil {
+			log.Println(err)
+			return actor, err
+		}
+
+		return actor, err
+	}, tx)
+	return res.(Actor), err
+}
