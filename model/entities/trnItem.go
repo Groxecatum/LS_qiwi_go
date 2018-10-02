@@ -56,6 +56,11 @@ func (item *TrnItem) save(tx *sqlx.Tx) error {
 			item.TransactionId, item.ItemId, item.ItemName, item.Quantity, item.Price, item.IsActual, item.TrnRequestId,
 			item.Quantity, item.Bonus, item.Bonus, item.Amount, item.Amount, item.IdInCheck, item.Created, item.AccountTypeId,
 			item.SourceTerminalId)
+		if err != nil {
+			return nil, err
+		}
+
+		defer rows.Close()
 
 		if rows.Next() {
 			err = rows.Scan(&item.Id)
@@ -66,15 +71,27 @@ func (item *TrnItem) save(tx *sqlx.Tx) error {
 	return err
 }
 
-func SetTrnRequestId(list []TrnItem, id int64) {
-	for _, item := range list {
-		item.TrnRequestId = id
+func SetTrnRequestId(list *[]TrnItem, id int64) {
+	for i, _ := range *list {
+		(*list)[i].TrnRequestId = id
 	}
 }
 
-func SetTrnId(list []TrnItem, id int64) {
-	for _, item := range list {
-		item.TransactionId = id
+func SetTrnId(list *[]TrnItem, id int64) {
+	for i, _ := range *list {
+		(*list)[i].TransactionId = id
+	}
+}
+
+func SetAccountTypeId(list *[]TrnItem, id int) {
+	for i, _ := range *list {
+		(*list)[i].AccountTypeId = id
+	}
+}
+
+func SetTerminalId(list *[]TrnItem, id int) {
+	for i, _ := range *list {
+		(*list)[i].AccountTypeId = id
 	}
 }
 

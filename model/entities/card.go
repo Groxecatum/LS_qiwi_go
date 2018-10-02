@@ -22,10 +22,16 @@ type GeneratedCard struct {
 	CVC     string
 }
 
-func GetCardById(tx *sqlx.Tx, id int) (Card, error) {
+func GetCardById(tx *sqlx.Tx, id int, lock bool) (Card, error) {
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
-		crd := Actor{}
-		err := tx.Get(&crd, `select * from ls.tcards where iid = $1`, id)
+		crd := Card{}
+
+		forUpdStr := ""
+		if lock {
+			forUpdStr = " FOR UPDATE"
+		}
+
+		err := tx.Get(&crd, `select iid, iclientid from ls.tcards where iid = $1`+forUpdStr, id)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -147,6 +153,8 @@ func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool
 			return crd, err
 		}
 
+		defer rows.Close()
+
 		if rows.Next() {
 			err := rows.Scan(&acc.Id)
 			if err != nil {
@@ -166,6 +174,8 @@ func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool
 			log.Println(err)
 			return crd, err
 		}
+
+		defer rows.Close()
 
 		if rows.Next() {
 			err := rows.Scan(&crd.Id)
@@ -205,7 +215,7 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 		if blockForUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&crd, "select * from ls.tcards where iid = $1"+forUpdStr, num)
+		err := tx.Get(&crd, "select iid, iclientid from ls.tcards where scardnum = $1"+forUpdStr, num)
 		if err != nil {
 			log.Println(err)
 			return crd, err

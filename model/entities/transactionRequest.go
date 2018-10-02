@@ -70,22 +70,24 @@ func GetByRefUnified(tx *sqlx.Tx, ref string, mt MerchantTerminal, refDate *time
 }
 
 func CreateNewTransactionRequest(tx *sqlx.Tx, trnType int, trnId int64, merchantId int, merchantTerminalId int,
-	actorId int, descr string, ref string, fullRef string, date time.Time, requestId *int64, zRepId string, commitState int,
+	actorId int, descr string, ref string, fullRef string, date time.Time, requestId int64, zRepId string, commitState int,
 	checkId string, batchPeriodId string, cardId *int, acceptorMerchantId *int, acceptorActorId *int) (TransactionRequest, error) {
 
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
-		trnReq := TransactionRequest{}
+		trnReq := TransactionRequest{TransactionId: trnId}
 		rows, err := tx.Query(`INSERT INTO ls.ttrnrequests (sitypeid, bitrnid,
-				imerchantid, iterminalid, isalespointid, sdescr, sreference, 
+				imerchantid, iterminalid, isalespointid, sdescr, sreference,
 				sfullreference, dtcreatedext, birequestid, szrepid, sicommitstate,
 				scheckid, sbatchperiodid, ioriginalcardid, iacceptormerchantid, iacceptoractorid)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
-			returning biid, dtcreated;`, trnType, trnId, merchantId, merchantTerminalId, actorId, descr, ref, fullRef,
-			date, requestId, zRepId, commitState, checkId, batchPeriodId, cardId, acceptorMerchantId, acceptorActorId)
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) returning biid, dtcreated;`,
+			trnType, trnId, merchantId, merchantTerminalId, actorId, descr, ref, fullRef, date, requestId,
+			zRepId, commitState, checkId, batchPeriodId, cardId, acceptorMerchantId, acceptorActorId)
 		if err != nil {
 			log.Println(err)
 			return trnReq, err
 		}
+
+		defer rows.Close()
 		if rows.Next() {
 			err := rows.Scan(&trnReq.Id, &trnReq.DtCreated)
 			if err != nil {

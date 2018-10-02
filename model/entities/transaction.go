@@ -34,6 +34,8 @@ func CreateNewTransaction(tx *sqlx.Tx) (Transaction, error) {
 			log.Println(err)
 			return trn, err
 		}
+
+		defer rows.Close()
 		if rows.Next() {
 			err := rows.Scan(&trn.Id, &trn.DtCreated)
 			if err != nil {
