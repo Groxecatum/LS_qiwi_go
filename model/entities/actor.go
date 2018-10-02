@@ -10,7 +10,7 @@ type Actor struct {
 	Id         int    `db:"iid"  xml:"id"`
 	MerchantId int    `db:"imerchantid"  xml:"merchantId"`
 	Title      string `db:"stitle"  xml:"title"`
-	Email      string `db:"semail"  xml:"email"`
+	//Email      string `db:"semail"  xml:"email"`
 }
 
 func GetActorById(tx *sqlx.Tx, id int) (Actor, error) {

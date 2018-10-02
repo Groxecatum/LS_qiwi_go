@@ -16,11 +16,11 @@ type TrnItem struct {
 	ItemId    string   `json:"id"        xml:"id,attr"`
 	IdInCheck int      `json:"idInCheck" xml:"idInCheck,attr"`
 	Quantity  float64  `json:"quantity"  xml:"quantity,attr"`
-	Price     float64  `json:"price"     xml:"price,attr"`
+	Price     int64    `json:"price"     xml:"price,attr"`
 	Amount    float64  `json:"amount"    xml:"amount,attr"`
 	//TotalBonus       int64  `json:"totalBonusAmount"    xml:"totalBonusAmount,attr"`
-	Bonus            float64 `json:"bonusAmount"     xml:"bonusAmount,attr"`
-	ItemName         string  `json:"itemName"  xml:",chardata"`
+	Bonus            int64  `json:"bonusAmount"     xml:"bonusAmount,attr"`
+	ItemName         string `json:"itemName"  xml:",chardata"`
 	Id               int
 	Created          time.Time
 	IsActual         bool
@@ -30,16 +30,16 @@ type TrnItem struct {
 	SourceTerminalId int
 }
 
-func GetItemsOverallAmount(list []TrnItem) float64 {
-	var amount float64
+func GetItemsOverallAmount(list []TrnItem) int64 {
+	var amount int64
 	for _, item := range list {
-		amount += item.Amount
+		amount += int64(item.Amount * 100)
 	}
 	return amount
 }
 
-func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns bool) float64 {
-	var amount float64
+func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns bool) int64 {
+	var amount int64
 	for _, item := range list {
 		amount += item.Bonus //TotalBonus
 	}

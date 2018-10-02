@@ -13,7 +13,7 @@ var db *sqlx.DB
 type DBExecutorFunc func(tx *sql.Tx) (interface{}, error)
 type DBXExecutorFunc func(tx *sqlx.Tx) (interface{}, error)
 
-func Establish(dbhost, dbport, dbuser, dbpass, dbname string) {
+func EstablishDB(dbhost, dbport, dbuser, dbpass, dbname string) {
 	var err error
 
 	db, err = sqlx.Connect("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",

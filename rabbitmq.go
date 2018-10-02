@@ -35,7 +35,7 @@ func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl
 }
 
 func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
-	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + " + @" + rabbitMQUrl + "/")
+	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + "@" + rabbitMQUrl + "/")
 	if err != nil {
 		return err
 	}
@@ -71,17 +71,32 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 		return err
 	}
 
-	go func() {
-		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
-			err = handler(d)
-			if err != nil {
-				log.Printf("Error: %s", err)
-				ch.Reject(d.DeliveryTag, false)
-			}
-
-			ch.Ack(d.DeliveryTag, false)
+	for d := range msgs {
+		//go func() {
+		log.Printf("Received a message: %s", d.Body)
+		err = handler(d)
+		if err != nil {
+			log.Printf("Error: %s", err)
+			ch.Reject(d.DeliveryTag, false)
 		}
-	}()
+
+		ch.Ack(d.DeliveryTag, false)
+		//}()
+	}
+
+	// TODO: ограничение MAX_THREADS - что бы не выжрало память
+	//go
+	//func() {
+	//	for d := range msgs {
+	//		log.Printf("Received a message: %s", d.Body)
+	//		err = handler(d)
+	//		if err != nil {
+	//			log.Printf("Error: %s", err)
+	//			ch.Reject(d.DeliveryTag, false)
+	//		}
+	//
+	//		ch.Ack(d.DeliveryTag, false)
+	//	}
+	//}()
 	return nil
 }

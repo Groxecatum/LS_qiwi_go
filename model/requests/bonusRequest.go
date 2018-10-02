@@ -70,22 +70,28 @@ type BonusResponse struct {
 func ParseBonusRequest(r *http.Request) (BonusRequest, error) {
 	b, err := golang_commons.ParseReqByte(r)
 	if err != nil {
-		return BonusRequest{}, err
+		return NewBonusRequestStruct(), err
 	}
 
 	return RequestFromBytes(b, golang_commons.GetFormatByRequest(r))
 }
 
 func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
-	var req BonusRequest
+	req := NewBonusRequestStruct()
 	switch format {
 	case "json":
-		return req, json.Unmarshal(b, &req)
+		err := json.Unmarshal(b, &req)
+		return req, err
 	default:
-		return req, xml.Unmarshal(b, &req)
+		err := xml.Unmarshal(b, &req)
+		return req, err
 	}
 }
 
 func (req *BonusRequest) IsPayment() bool {
 	return req.Pin != "" && req.Type == "mrct_PayWithBonuses"
+}
+
+func NewBonusRequestStruct() BonusRequest {
+	return BonusRequest{Terminal: 1}
 }
