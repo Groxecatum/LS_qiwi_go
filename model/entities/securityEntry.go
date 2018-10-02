@@ -3,6 +3,7 @@ package entities
 import (
 	"git.kopilka.kz/BACKEND/golang_commons"
 	"github.com/jmoiron/sqlx"
+	"log"
 )
 
 type SecurityEntry struct {
@@ -68,4 +69,17 @@ func CreateNewSecurityEntry(tx *sqlx.Tx, secureValue *string, hashType int) (Sec
 	//	return security;
 	//},extConn).execute();
 
+}
+
+func GetSecurityById(tx *sqlx.Tx, id int) (SecurityEntry, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		security := SecurityEntry{}
+		err := tx.Get(&security, `select * from ls.tsecurity where iid = $1`, id)
+		if err != nil {
+			log.Println(err)
+			return security, err
+		}
+		return security, err
+	}, tx)
+	return res.(SecurityEntry), err
 }

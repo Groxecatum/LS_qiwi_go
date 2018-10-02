@@ -10,7 +10,6 @@ type Actor struct {
 	Id         int    `db:"iid"  xml:"id"`
 	MerchantId int    `db:"imerchantid"  xml:"merchantId"`
 	Title      string `db:"stitle"  xml:"title"`
-	Email      string `db:"semail"  xml:"email"`
 }
 
 func GetActorById(tx *sqlx.Tx, id int) (Actor, error) {
@@ -30,7 +29,8 @@ func GetActorById(tx *sqlx.Tx, id int) (Actor, error) {
 func GetActorByLogin(tx *sqlx.Tx, login string) (Actor, error) {
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		actor := Actor{}
-		err := tx.Get(&actor, `select * from ls.tactors where slogin = $1`, login)
+		//err := tx.Get(&actor, `select * from ls.tactors where slogin = $1`, login)
+		err := tx.Get(&actor, `select iid, imerchantid, stitle from ls.tactors where slogin = $1`, login)
 		if err != nil {
 			log.Println(err)
 			return actor, err
