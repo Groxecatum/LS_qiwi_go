@@ -105,3 +105,11 @@ func SaveTrnItems(tx *sqlx.Tx, list []TrnItem) error {
 	}
 	return err
 }
+
+func GetAccountTypesAndSumsFromItems(list []TrnItem) map[int]int64 {
+	res := make(map[int]int64)
+	for _, item := range list {
+		res[item.AccountTypeId] = res[item.AccountTypeId] + item.Bonus
+	}
+	return res
+}

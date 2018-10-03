@@ -13,8 +13,10 @@ import (
 )
 
 type Card struct {
-	Id       int `db:"iid"`
-	ClientId int `db:"iclientid"`
+	Id        int  `db:"iid"`
+	ClientId  int  `db:"iclientid"`
+	IsBlocked bool `db:"bblocked"`
+	IsTest    bool `db:"bistest"`
 }
 
 type GeneratedCard struct {
@@ -31,7 +33,7 @@ func GetCardById(tx *sqlx.Tx, id int, lock bool) (Card, error) {
 			forUpdStr = " FOR UPDATE"
 		}
 
-		err := tx.Get(&crd, `select iid, iclientid from ls.tcards where iid = $1`+forUpdStr, id)
+		err := tx.Get(&crd, `select iid, iclientid, btest, bblocked from ls.tcards where iid = $1`+forUpdStr, id)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -215,7 +217,7 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 		if blockForUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&crd, "select iid, iclientid from ls.tcards where scardnum = $1"+forUpdStr, num)
+		err := tx.Get(&crd, "select iid, iclientid, btest, bblocked from ls.tcards where scardnum = $1"+forUpdStr, num)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -224,4 +226,18 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 		return crd, err
 	}, tx)
 	return res.(Card), err
+}
+
+func GetCardlistByClient(tx *sqlx.Tx, clientId int) ([]Card, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		crd := []Card{}
+		err := tx.Select(&crd, "select iid, iclientid, btest, bblocked from ls.tcards where iclientid = $1", clientId)
+		if err != nil {
+			log.Println(err)
+			return crd, err
+		}
+
+		return crd, err
+	}, tx)
+	return res.([]Card), err
 }

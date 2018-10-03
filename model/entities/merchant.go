@@ -7,9 +7,16 @@ import (
 )
 
 type Merchant struct {
-	Id                 int  `db:"iid"`
-	CreateVirtualUser  bool `db:"bcreatevirtualuser"`
-	AllowPayWithoutPin bool `db:"ballowpaywithoutpin"`
+	Id                    int     `db:"iid"`
+	CreateVirtualUser     bool    `db:"bcreatevirtualuser"`
+	AllowPayWithoutPin    bool    `db:"ballowpaywithoutpin"`
+	IsPrepaid             bool    `db:"bisprepaid"`
+	WithdrawFeePercent    float64 `db:"nwithdrawfeepercent"`
+	BlockDays             int     `db:"siblockdays"`
+	ChargeFeeType         int     `db:"sichargefeetype"`
+	ChargeFeeValue        float32 `db:"nchargefeevalue"`
+	AllowNegativeDecrease bool    `db:"ballownegativedecrease"`
+	AllowNegativeBalance  bool    `db:"ballownegativebalance"`
 }
 
 func GetMerchantById(tx *sqlx.Tx, id int) (Merchant, error) {
@@ -30,7 +37,9 @@ func GetMerchantById(tx *sqlx.Tx, id int) (Merchant, error) {
 func GetMerchantDataForTransaction(tx *sqlx.Tx, merchantId int) (Merchant, error) {
 	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		mrct := Merchant{}
-		err := tx.Get(&mrct, `select iid, bcreatevirtualuser, ballowpaywithoutpin from ls.tmerchants where iid = $1`, merchantId)
+		err := tx.Get(&mrct, `select iid, bcreatevirtualuser, ballowpaywithoutpin, bisprepaid, nwithdrawfeepercent,
+											siblockdays, sichargefeetype, nchargefeevalue, ballownegativedecrease, ballownegativebalance
+										from ls.tmerchants where iid = $1`, merchantId)
 		if err != nil {
 			log.Println(err)
 			return mrct, err
