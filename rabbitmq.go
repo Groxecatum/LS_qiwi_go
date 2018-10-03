@@ -34,7 +34,7 @@ func Publish(queue string, b []byte, rabbitMQUser, rabbitMQPassword, rabbitMQUrl
 	return nil
 }
 
-func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
+func ListenAndRecieve(queue string, requeue bool, handler RMQHandlerFunc, rabbitMQUser, rabbitMQPassword, rabbitMQUrl string) error {
 	conn, err := amqp.Dial("amqp://" + rabbitMQUser + ":" + rabbitMQPassword + "@" + rabbitMQUrl + "/")
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func ListenAndRecieve(queue string, handler RMQHandlerFunc, rabbitMQUser, rabbit
 		err = handler(d)
 		if err != nil {
 			log.Printf("Error: %s", err)
-			ch.Reject(d.DeliveryTag, false)
+			ch.Reject(d.DeliveryTag, requeue)
 		}
 
 		ch.Ack(d.DeliveryTag, false)
