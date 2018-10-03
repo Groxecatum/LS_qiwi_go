@@ -1,6 +1,10 @@
 package requests
 
-import "time"
+import (
+	"encoding/json"
+	"encoding/xml"
+	"time"
+)
 
 type CommitRequest struct {
 	SessionId     string    `json:"sessionId"     xml:"sessionId"`
@@ -16,4 +20,20 @@ type CommitRequest struct {
 
 type CommitResponse struct {
 	TransactionId string `json:"transactionId"     xml:"transactionId"`
+}
+
+func NewCommitRequestStruct() CommitRequest {
+	return CommitRequest{Terminal: 1, Commit: 1}
+}
+
+func CommitRequestFromBytes(b []byte, format string) (CommitRequest, error) {
+	req := NewCommitRequestStruct()
+	switch format {
+	case "json":
+		err := json.Unmarshal(b, &req)
+		return req, err
+	default:
+		err := xml.Unmarshal(b, &req)
+		return req, err
+	}
 }

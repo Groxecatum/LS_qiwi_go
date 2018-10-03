@@ -73,10 +73,10 @@ func ParseBonusRequest(r *http.Request) (BonusRequest, error) {
 		return NewBonusRequestStruct(), err
 	}
 
-	return RequestFromBytes(b, golang_commons.GetFormatByRequest(r))
+	return BonusRequestFromBytes(b, golang_commons.GetFormatByRequest(r))
 }
 
-func RequestFromBytes(b []byte, format string) (BonusRequest, error) {
+func BonusRequestFromBytes(b []byte, format string) (BonusRequest, error) {
 	req := NewBonusRequestStruct()
 	switch format {
 	case "json":
