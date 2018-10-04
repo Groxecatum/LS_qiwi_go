@@ -3,10 +3,13 @@ package requests
 import (
 	"encoding/json"
 	"encoding/xml"
+	"git.kopilka.kz/BACKEND/golang_commons"
+	"net/http"
 	"time"
 )
 
 type CommitRequest struct {
+	CustomRequest
 	SessionId     string    `json:"sessionId"     xml:"sessionId"`
 	Login         string    `json:"login"         xml:"login"`
 	Password      string    `json:"psw"           xml:"psw"`
@@ -19,6 +22,7 @@ type CommitRequest struct {
 }
 
 type CommitResponse struct {
+	CustomResponse
 	TransactionId string `json:"transactionId"     xml:"transactionId"`
 }
 
@@ -36,4 +40,13 @@ func CommitRequestFromBytes(b []byte, format string) (CommitRequest, error) {
 		err := xml.Unmarshal(b, &req)
 		return req, err
 	}
+}
+
+func ParseCommitRequest(r *http.Request) (CommitRequest, error) {
+	b, err := golang_commons.ParseReqByte(r)
+	if err != nil {
+		return NewCommitRequestStruct(), err
+	}
+
+	return CommitRequestFromBytes(b, golang_commons.GetFormatByRequest(r))
 }
