@@ -77,3 +77,17 @@ func CreateEmptyClient(tx *sqlx.Tx, phone string) (Client, error) {
 	}, tx)
 	return res.(Client), err
 }
+
+func GetPinById(tx *sqlx.Tx, id int) (int, error) {
+	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		var pin int
+		err := tx.Get(&pin, `select ipinsecurityid from ls.tclients where iid = $1`, id)
+		if err != nil {
+			log.Println(err)
+			return pin, err
+		}
+
+		return pin, err
+	}, tx)
+	return res.(int), err
+}
