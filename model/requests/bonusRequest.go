@@ -37,7 +37,7 @@ type BonusRequest struct {
 	SessionId       string              `json:"sessionId"        xml:"sessionId"`
 	Login           string              `json:"login"            xml:"login"`
 	Password        string              `json:"psw"              xml:"psw"`
-	Amount          int64               `json:"amount"           xml:"amount"`
+	Amount          float64             `json:"amount"           xml:"amount"`
 	Date            entities.CustomTime `json:"date"             xml:"date"`
 	Ref             string              `json:"ref"              xml:"ref"`
 	CheckId         string              `json:"checkId"          xml:"checkId"`
@@ -47,9 +47,9 @@ type BonusRequest struct {
 	CellPhone       string              `json:"cellPhone"        xml:"cellPhone"`
 	SecCode         string              `json:"secCode"          xml:"secCode"`
 	Pin             string              `json:"pin"              xml:"pin"`
-	BonusesPay      int64               `json:"bonusAmountToPay" xml:"bonusAmountToPay"`
+	BonusesPay      float64             `json:"bonusAmountToPay" xml:"bonusAmountToPay"`
 	NeedCommit      int                 `json:"needCommit"       xml:"needCommit"`
-	BonusesAcc      int64               `json:"bonusAmount"      xml:"bonusAmount"`
+	BonusesAcc      float64             `json:"bonusAmount"      xml:"bonusAmount"`
 	SecureHashCode  string              `json:"secureHashCode"   xml:"secureHashCode"`
 	SecureShortCode string              `json:"secureShortCode"  xml:"secureShortCode"`
 	Items           []entities.TrnItem  `json:"items"            xml:"items>item"`
@@ -59,12 +59,12 @@ type BonusRequest struct {
 
 type BonusResponse struct {
 	CustomResponse
-	TransactionId     int64  `json:"transactionId"     xml:"transactionId"`
-	ResultBonusAmount int64  `json:"resultBonusAmount" xml:"resultBonusAmount"`
-	ClientName        string `json:"clientName"        xml:"clientName"`
-	TokenCount        int    `json:"tokenCount"        xml:"tokenCount"`
-	Discount          int    `json:"discount"          xml:"discount"`
-	ReqChallenge      string `json:"reqChallenge"      xml:"reqChallenge"`
+	TransactionId     int64   `json:"transactionId"     xml:"transactionId"`
+	ResultBonusAmount float64 `json:"resultBonusAmount" xml:"resultBonusAmount"`
+	ClientName        string  `json:"clientName"        xml:"clientName"`
+	TokenCount        int     `json:"tokenCount"        xml:"tokenCount"`
+	Discount          int     `json:"discount"          xml:"discount"`
+	ReqChallenge      string  `json:"reqChallenge"      xml:"reqChallenge"`
 }
 
 func ParseBonusRequest(r *http.Request) (BonusRequest, error) {

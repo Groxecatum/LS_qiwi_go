@@ -7,11 +7,11 @@ import (
 )
 
 type MerchantTerminal struct {
-	Id                  int   `db:"iid"`
-	MerchantId          int   `db:"imerchantid"`
-	NeedPostponedCommit bool  `db:"bneedpostponecommit"`
-	IsTest              bool  `db:"btest"`
-	AllowedMinimum      int64 `db:"btest"`
+	Id                  int     `db:"iid"`
+	MerchantId          int     `db:"imerchantid"`
+	NeedPostponedCommit bool    `db:"bneedpostponecommit"`
+	IsTest              bool    `db:"btest"`
+	AllowedMinimum      float64 `db:"nallowedminimum"`
 }
 
 func GetMerchantTerminal(tx *sqlx.Tx, actorId, terminalNum int, lock bool) (MerchantTerminal, error) {
