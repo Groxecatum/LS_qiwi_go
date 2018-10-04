@@ -12,3 +12,7 @@ type CheckBalanceRequest struct {
 	CardNum string  `json:"card_num"`
 	Balance float64 `json:"balance"`
 }
+
+type UpdateCardBalance struct {
+	CardNum string `json:"card_num"`
+}
