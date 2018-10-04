@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 )
@@ -15,7 +15,7 @@ type MerchantTerminal struct {
 }
 
 func GetMerchantTerminal(tx *sqlx.Tx, actorId, terminalNum int, lock bool) (MerchantTerminal, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		mt := MerchantTerminal{}
 		forUpdStr := ""
 		if lock {
@@ -34,7 +34,7 @@ func GetMerchantTerminal(tx *sqlx.Tx, actorId, terminalNum int, lock bool) (Merc
 }
 
 func GetMerchantTerminalById(tx *sqlx.Tx, terminalId int, lock bool) (MerchantTerminal, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		mt := MerchantTerminal{}
 		forUpdStr := ""
 		if lock {

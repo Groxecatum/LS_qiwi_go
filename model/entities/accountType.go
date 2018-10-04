@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 )
@@ -12,7 +12,7 @@ type AccountType struct {
 }
 
 func GetAccountTypeById(tx *sqlx.Tx, id int) (AccountType, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := AccountType{}
 
 		err := tx.Get(&crd, `select iid, iburnafterdays from ls.tcardaccounttypes where iid = $1`, id)

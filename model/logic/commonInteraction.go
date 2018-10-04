@@ -46,8 +46,7 @@ func ActorFromSession(sessionId, LSUrl, LSPath string) (commonModel.Actor, error
 	hc := http.Client{}
 
 	body := "<request frontEnd=\"web\" type=\"" + ActorBySessionServlet + "\"><sessionId>" + sessionId + "</sessionId></request>"
-	req, err := http.NewRequest("POST", LSUrl+LSPath+ActorBySessionServlet,
-		strings.NewReader(body))
+	req, err := http.NewRequest("POST", LSUrl+LSPath+ActorBySessionServlet, strings.NewReader(body))
 	if err != nil {
 		log.Println("Error getting user for session " + sessionId)
 		return commonModel.Actor{}, err

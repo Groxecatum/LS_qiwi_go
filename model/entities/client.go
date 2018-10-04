@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
@@ -16,7 +16,7 @@ type Client struct {
 }
 
 func GetClientById(tx *sqlx.Tx, id int) (Client, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
 		err := tx.Get(&cli, `select iid, bisregistered, sfirstname, scellphone, dtregistered from ls.tclients where iid = $1`, id)
 		if err != nil {
@@ -30,7 +30,7 @@ func GetClientById(tx *sqlx.Tx, id int) (Client, error) {
 }
 
 func GetClientByCellPhone(tx *sqlx.Tx, phone string) (Client, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
 		err := tx.Get(&cli, `select * from ls.tclients where scellphone = $1`, phone)
 		if err != nil {
@@ -44,7 +44,7 @@ func GetClientByCellPhone(tx *sqlx.Tx, phone string) (Client, error) {
 }
 
 func CreateEmptyClient(tx *sqlx.Tx, phone string) (Client, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
 		pswSecurity, err := CreateNewSecurityEntry(tx, nil, 0)
 		if err != nil {

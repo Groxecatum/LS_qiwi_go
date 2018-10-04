@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
@@ -27,7 +27,7 @@ type TransactionRequest struct {
 }
 
 func GetTransactionRequestById(tx *sqlx.Tx, id int64) (TransactionRequest, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		trnReq := TransactionRequest{}
 		err := tx.Get(&trnReq, `select * from ls.ttrnrequests where biid = $1`, id)
 		if err != nil {
@@ -70,17 +70,17 @@ func GetByRefUnified(tx *sqlx.Tx, ref string, mt MerchantTerminal, refDate *time
 }
 
 func CreateNewTransactionRequest(tx *sqlx.Tx, trnType int, trnId int64, merchantId int, merchantTerminalId int,
-	actorId int, descr string, ref string, fullRef string, date time.Time, requestId int64, zRepId string, commitState int,
+	actorId int, descr string, ref string, fullRef string, date time.Time, zRepId string, commitState int,
 	checkId string, batchPeriodId string, cardId *int, acceptorMerchantId *int, acceptorActorId *int) (TransactionRequest, error) {
 
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		trnReq := TransactionRequest{TransactionId: trnId}
 		rows, err := tx.Query(`INSERT INTO ls.ttrnrequests (sitypeid, bitrnid,
 				imerchantid, iterminalid, isalespointid, sdescr, sreference,
-				sfullreference, dtcreatedext, birequestid, szrepid, sicommitstate,
+				sfullreference, dtcreatedext, szrepid, sicommitstate,
 				scheckid, sbatchperiodid, ioriginalcardid, iacceptormerchantid, iacceptoractorid)
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) returning biid, dtcreated;`,
-			trnType, trnId, merchantId, merchantTerminalId, actorId, descr, ref, fullRef, date, requestId,
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) returning biid, dtcreated;`,
+			trnType, trnId, merchantId, merchantTerminalId, actorId, descr, ref, fullRef, date,
 			zRepId, commitState, checkId, batchPeriodId, cardId, acceptorMerchantId, acceptorActorId)
 		if err != nil {
 			log.Println(err)

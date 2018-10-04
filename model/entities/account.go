@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -30,7 +30,7 @@ const (
 
 func RegAccountChange(tx *sqlx.Tx, accId int, amountChange, blockedAmountChange int64) (AccountChange, error) {
 
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		accChng := AccountChange{}
 
 		rows, err := tx.Query(`update ls.tcardaccounts set nbonuses = nbonuses + $1,
@@ -60,7 +60,7 @@ func RegAccountChange(tx *sqlx.Tx, accId int, amountChange, blockedAmountChange 
 }
 
 func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc := Account{}
 
 		forUpdStr := ""
@@ -81,7 +81,7 @@ func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
 }
 
 func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc := Account{}
 		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses, ca.nblockedbonuses, ca.bispaymentallowed,
 				ca.bistemporaryblocked, ca.btest, ca.bblocked
@@ -113,7 +113,7 @@ func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Accou
 }
 
 func GetAccListByClientId(tx *sqlx.Tx, clientId int) ([]Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		accs := []Account{}
 		err := tx.Select(&accs, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses, ca.nblockedbonuses, ca.bispaymentallowed,
 					ca.bistemporaryblocked, ca.btest, ca.bblocked
@@ -127,7 +127,7 @@ func GetAccListByClientId(tx *sqlx.Tx, clientId int) ([]Account, error) {
 }
 
 func GetMerchantAccount(tx *sqlx.Tx, merchantId int, forUpdate bool) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc := Account{}
 		forUpdStr := ""
 		if forUpdate {
@@ -144,7 +144,7 @@ func GetMerchantAccount(tx *sqlx.Tx, merchantId int, forUpdate bool) (Account, e
 }
 
 func GetByCardAndType(tx *sqlx.Tx, cardId, typeId int, forUpdate bool) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc := Account{}
 		forUpdStr := ""
 		if forUpdate {
@@ -162,7 +162,7 @@ func GetByCardAndType(tx *sqlx.Tx, cardId, typeId int, forUpdate bool) (Account,
 }
 
 func CreateNewAccount(tx *sqlx.Tx, cardAccountTypeId int, test bool, externalBurnDate *time.Time) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		var dtBurn time.Time
 		if externalBurnDate == nil {
 			typ, err := GetAccountTypeById(tx, cardAccountTypeId)
@@ -203,7 +203,7 @@ func CreateNewAccount(tx *sqlx.Tx, cardAccountTypeId int, test bool, externalBur
 }
 
 func CreateAndLinkNew(tx *sqlx.Tx, test bool, cardId, cardAccountTypeId int, externalBurnDate *time.Time) (Account, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc, err := CreateNewAccount(tx, cardAccountTypeId, test, externalBurnDate)
 		if err != nil {
 			log.Println(err)
