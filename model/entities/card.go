@@ -2,7 +2,7 @@ package entities
 
 import (
 	"fmt"
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -25,7 +25,7 @@ type GeneratedCard struct {
 }
 
 func GetCardById(tx *sqlx.Tx, id int, lock bool) (Card, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := Card{}
 
 		forUpdStr := ""
@@ -56,7 +56,7 @@ func ExtractCardNum(fullNum string) (string, error) {
 }
 
 func getLastCardId(tx *sqlx.Tx) (int, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		id := ""
 		rows, err := tx.Query("SELECT max(sCardNum) FROM ls.tcards")
 
@@ -145,7 +145,7 @@ func getExpDate(from time.Time) time.Time {
 }
 
 func createCard(tx *sqlx.Tx, num string, expDate time.Time, temp bool, test bool, cvc string, clientId int, virtual bool, blocked bool) error {
-	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := Card{}
 		acc := Account{}
 
@@ -211,7 +211,7 @@ func GenerateCardOnline(tx *sqlx.Tx, virtual bool, clientId int) error {
 }
 
 func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := Card{}
 		forUpdStr := ""
 		if blockForUpdate {
@@ -229,7 +229,7 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 }
 
 func GetCardlistByClient(tx *sqlx.Tx, clientId int) ([]Card, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := []Card{}
 		err := tx.Select(&crd, "select iid, iclientid, btest, bblocked from ls.tcards where iclientid = $1", clientId)
 		if err != nil {

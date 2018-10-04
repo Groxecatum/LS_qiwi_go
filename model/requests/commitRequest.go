@@ -23,7 +23,7 @@ type CommitRequest struct {
 
 type CommitResponse struct {
 	CustomResponse
-	TransactionId string `json:"transactionId"     xml:"transactionId"`
+	TransactionId int64 `json:"transactionId"     xml:"transactionId"`
 }
 
 func NewCommitRequestStruct() CommitRequest {

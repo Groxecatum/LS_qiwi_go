@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 )
@@ -20,7 +20,7 @@ type Merchant struct {
 }
 
 func GetMerchantById(tx *sqlx.Tx, id int) (Merchant, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		mrct := Merchant{}
 		err := tx.Get(&mrct, `select * from ls.tcards where iid = $1`, id)
 		if err != nil {
@@ -35,7 +35,7 @@ func GetMerchantById(tx *sqlx.Tx, id int) (Merchant, error) {
 
 // без всяких жирных текстовых полей
 func GetMerchantDataForTransaction(tx *sqlx.Tx, merchantId int) (Merchant, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		mrct := Merchant{}
 		err := tx.Get(&mrct, `select iid, bcreatevirtualuser, ballowpaywithoutpin, bisprepaid, nwithdrawfeepercent,
 											siblockdays, sichargefeetype, nchargefeevalue, ballownegativedecrease, ballownegativebalance

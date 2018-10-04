@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
@@ -13,7 +13,7 @@ type Transaction struct {
 }
 
 func GetTransactionById(tx *sqlx.Tx, id int64) (Transaction, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		trn := Transaction{}
 		err := tx.Get(&trn, `select * from ls.ttransactions where biid = $1`, id)
 		if err != nil {
@@ -27,7 +27,7 @@ func GetTransactionById(tx *sqlx.Tx, id int64) (Transaction, error) {
 }
 
 func CreateNewTransaction(tx *sqlx.Tx) (Transaction, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		trn := Transaction{}
 		rows, err := tx.Query(`INSERT INTO ls.ttransactions DEFAULT VALUES returning biid, dtcreated;`)
 		if err != nil {

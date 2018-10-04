@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
 	"log"
 )
@@ -21,7 +21,7 @@ const (
 
 func CreateNewSecurityEntry(tx *sqlx.Tx, secureValue *string, hashType int) (SecurityEntry, error) {
 
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		return SecurityEntry{}, nil
 	}, tx)
 
@@ -72,7 +72,7 @@ func CreateNewSecurityEntry(tx *sqlx.Tx, secureValue *string, hashType int) (Sec
 }
 
 func GetSecurityById(tx *sqlx.Tx, id int) (SecurityEntry, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		security := SecurityEntry{}
 		err := tx.Get(&security, `select * from ls.tsecurity where iid = $1`, id)
 		if err != nil {

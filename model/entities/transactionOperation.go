@@ -2,7 +2,7 @@ package entities
 
 import (
 	"database/sql"
-	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -48,7 +48,7 @@ type TransactionOperation struct {
 }
 
 func GetOperationById(tx *sqlx.Tx, id int64) (TransactionOperation, error) {
-	res, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		op := TransactionOperation{}
 		err := tx.Get(&op, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange, 
 										nblockedamountchange
@@ -64,7 +64,7 @@ func GetOperationById(tx *sqlx.Tx, id int64) (TransactionOperation, error) {
 }
 
 func setOperationCancelled(tx *sqlx.Tx, opId int64, newState bool) error {
-	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		_, err := tx.Exec(`UPDATE ls.ttrnoperations SET bcancelled = $1 WHERE biid = $2 and siprocessed = 0`,
 			newState, opId)
 		return nil, err
@@ -91,7 +91,7 @@ func processOperation(tx *sqlx.Tx, operation TransactionOperation) error {
 		}
 	}
 
-	_, err = golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	_, err = db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		_, err := tx.Exec(`update ls.ttrnoperations a
 			 set siprocessed = 1, nresultamount = $1, nresultblockedamount = $2,
 			 dtprocessed = CURRENT_TIMESTAMP where biid = $3`,
@@ -168,7 +168,7 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		processStatus = 1
 	}
 
-	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		rows, err := tx.Query(`INSERT INTO ls.ttrnoperations(bitrnid,sitype, namountchange, nblockedamountchange,
 			siprocessed, icardaccountid, icardid, iterminalid, dtScheduledTime, bitrnrequestid, nchargefeeamount,
 			nwithdrawfeeamount, sitypeex, sicommitstate, namount, bireferredoperationid, sdescr)
@@ -274,7 +274,7 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		processStatus = 1
 	}
 
-	_, err := golang_commons.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		rows, err := tx.Query(`INSERT INTO ls.ttrnoperations(bitrnid,sitype, namountchange, nblockedamountchange,
 			siprocessed, icardaccountid, icardid, iterminalid, dtScheduledTime, bitrnrequestid, nchargefeeamount,
 			nwithdrawfeeamount, sitypeex, sicommitstate, namount, bireferredoperationid, sdescr)
