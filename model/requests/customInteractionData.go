@@ -13,7 +13,7 @@ type CustomRequest struct {
 
 type CustomResponse struct {
 	XMLName     xml.Name `json:",omitempty"   xml:"response"`
-	Result      string   `json:"result"       xml:"result,attr"`
+	Result      int      `json:"result"       xml:"result,attr"`
 	ResultDescr string   `json:"resultDescr"  xml:"resultDescr,attr"`
 }
 

@@ -42,8 +42,8 @@ func Invert(b []byte) []byte {
 	return b
 }
 
-func GetFullReference(date time.Time, ref string, actorId int) string {
-	return date.Format("yyMMddHHmmss") + ref + strconv.Itoa(actorId)
+func GetFullReference(dt time.Time, ref string, actorId int) string {
+	return dt.Format("060102150405") + ref + strconv.Itoa(actorId)
 }
 
 func Min(x, y int64) int64 {
