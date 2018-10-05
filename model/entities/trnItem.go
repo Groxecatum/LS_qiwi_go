@@ -53,8 +53,8 @@ func (item *TrnItem) save(tx *sqlx.Tx) error {
 			"  isactual, bitrnrequestid, nitemquantitychange, nbonusamount, "+
 			"  nbonusamountchange, namount, namountchange, iidincheck, dtcreated, iAccountTypeId, isourceterminal) \n"+
 			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning biid",
-			item.TransactionId, item.ItemId, item.ItemName, item.Quantity, item.Price, item.IsActual, item.TrnRequestId,
-			item.Quantity, item.Bonus, item.Bonus, item.Amount, item.Amount, item.IdInCheck, item.Created, item.AccountTypeId,
+			item.TransactionId, item.ItemId, item.ItemName, item.Quantity, item.Price*100, item.IsActual, item.TrnRequestId,
+			item.Quantity, item.Bonus*100, item.Bonus*100, item.Amount*100, item.Amount*100, item.IdInCheck, item.Created, item.AccountTypeId,
 			item.SourceTerminalId)
 		if err != nil {
 			return nil, err
@@ -80,6 +80,18 @@ func SetTrnRequestId(list []TrnItem, id int64) {
 func SetTrnId(list []TrnItem, id int64) {
 	for i, _ := range list {
 		list[i].TransactionId = id
+	}
+}
+
+func SetActual(list []TrnItem, val bool) {
+	for i, _ := range list {
+		list[i].IsActual = val
+	}
+}
+
+func SetDtCreated(list []TrnItem, val time.Time) {
+	for i, _ := range list {
+		list[i].Created = val
 	}
 }
 
