@@ -70,7 +70,7 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 			}
 
 			err = entities.RegMerchantOperation(tx, t, entities.TRNOPERTYPE_TERMINAL_TO_TERMINAL_BLOCK,
-				bonusAmountToPay, processOnline, merchantAccount, m, mt, nil, tr.Id,
+				bonusAmount, processOnline, merchantAccount, m, mt, nil, tr.Id,
 				0, 0, entities.TRNOPERTYPEEX_PAY_WITH_BONUSES,
 				entities.COMMITSTATE_INSTANT, 0)
 			if err != nil {
@@ -78,7 +78,7 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 			}
 
 			err = entities.RegMerchantOperation(tx, t, entities.TRNOPERTYPE_TERMINAL_BLOCK_TO_CLIENT,
-				bonusAmountToPay, processOnline, merchantAccount, m, mt, &scheduledTime,
+				bonusAmount, processOnline, merchantAccount, m, mt, &scheduledTime,
 				tr.Id, 0, 0,
 				entities.TRNOPERTYPEEX_COMMIT, commitState, 0)
 			if err != nil {
@@ -88,14 +88,14 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 		}
 
 		err = entities.RegClientOperation(tx, t, entities.TRNOPERTYPE_TERMINAL_TO_CLIENT_BLOCK,
-			bonusAmountToPay, processOnline, crd, clientAccount, m, mt, nil, tr.Id,
+			bonusAmount, processOnline, crd, clientAccount, m, mt, nil, tr.Id,
 			0, chargeFeeAmount, entities.TRNOPERTYPEEX_GAIN_BONUSES,
 			entities.COMMITSTATE_INSTANT, 0, "", includeBlocked, false)
 		if err != nil {
 			return err
 		}
 		err = entities.RegClientOperation(tx, t, entities.TRNOPERTYPE_CLIENT_BLOCK_TO_ACTIVE,
-			bonusAmountToPay, processOnline, crd, clientAccount, m, mt, &scheduledTime, tr.Id,
+			bonusAmount, processOnline, crd, clientAccount, m, mt, &scheduledTime, tr.Id,
 			0, 0, entities.TRNOPERTYPEEX_COMMIT, commitState,
 			0, "", includeBlocked, false)
 		if err != nil {
