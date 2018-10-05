@@ -16,7 +16,7 @@ type Card struct {
 	Id        int  `db:"iid"`
 	ClientId  int  `db:"iclientid"`
 	IsBlocked bool `db:"bblocked"`
-	IsTest    bool `db:"bistest"`
+	IsTest    bool `db:"btest"`
 }
 
 type GeneratedCard struct {

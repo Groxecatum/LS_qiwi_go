@@ -16,11 +16,11 @@ type TrnItem struct {
 	ItemId    string   `json:"id"        xml:"id,attr"`
 	IdInCheck int      `json:"idInCheck" xml:"idInCheck,attr"`
 	Quantity  float64  `json:"quantity"  xml:"quantity,attr"`
-	Price     int64    `json:"price"     xml:"price,attr"`
+	Price     float64  `json:"price"     xml:"price,attr"`
 	Amount    float64  `json:"amount"    xml:"amount,attr"`
 	//TotalBonus       int64  `json:"totalBonusAmount"    xml:"totalBonusAmount,attr"`
-	Bonus            int64  `json:"bonusAmount"     xml:"bonusAmount,attr"`
-	ItemName         string `json:"itemName"  xml:",chardata"`
+	Bonus            float64 `json:"bonusAmount"     xml:"bonusAmount,attr"`
+	ItemName         string  `json:"itemName"  xml:",chardata"`
 	Id               int
 	Created          time.Time
 	IsActual         bool
@@ -30,16 +30,16 @@ type TrnItem struct {
 	SourceTerminalId int
 }
 
-func GetItemsOverallAmount(list []TrnItem) int64 {
-	var amount int64
+func GetItemsOverallAmount(list []TrnItem) float64 {
+	var amount float64
 	for _, item := range list {
-		amount += int64(item.Amount * 100)
+		amount += item.Amount
 	}
 	return amount
 }
 
-func GetOverallBonusAmount(list []TrnItem, cardAccountType int, includeCampaigns bool) int64 {
-	var amount int64
+func GetOverallBonusAmount(list []TrnItem) float64 {
+	var amount float64
 	for _, item := range list {
 		amount += item.Bonus //TotalBonus
 	}
@@ -71,27 +71,27 @@ func (item *TrnItem) save(tx *sqlx.Tx) error {
 	return err
 }
 
-func SetTrnRequestId(list *[]TrnItem, id int64) {
-	for i, _ := range *list {
-		(*list)[i].TrnRequestId = id
+func SetTrnRequestId(list []TrnItem, id int64) {
+	for i, _ := range list {
+		list[i].TrnRequestId = id
 	}
 }
 
-func SetTrnId(list *[]TrnItem, id int64) {
-	for i, _ := range *list {
-		(*list)[i].TransactionId = id
+func SetTrnId(list []TrnItem, id int64) {
+	for i, _ := range list {
+		list[i].TransactionId = id
 	}
 }
 
-func SetAccountTypeId(list *[]TrnItem, id int) {
-	for i, _ := range *list {
-		(*list)[i].AccountTypeId = id
+func SetAccountTypeId(list []TrnItem, id int) {
+	for i, _ := range list {
+		list[i].AccountTypeId = id
 	}
 }
 
-func SetTerminalId(list *[]TrnItem, id int) {
-	for i, _ := range *list {
-		(*list)[i].AccountTypeId = id
+func SetTerminalId(list []TrnItem, id int) {
+	for i, _ := range list {
+		list[i].SourceTerminalId = id
 	}
 }
 
@@ -106,8 +106,8 @@ func SaveTrnItems(tx *sqlx.Tx, list []TrnItem) error {
 	return err
 }
 
-func GetAccountTypesAndSumsFromItems(list []TrnItem) map[int]int64 {
-	res := make(map[int]int64)
+func GetAccountTypesAndSumsFromItems(list []TrnItem) map[int]float64 {
+	res := make(map[int]float64)
 	for _, item := range list {
 		res[item.AccountTypeId] = res[item.AccountTypeId] + item.Bonus
 	}

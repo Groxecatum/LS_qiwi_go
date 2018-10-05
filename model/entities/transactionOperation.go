@@ -43,15 +43,15 @@ type TransactionOperation struct {
 	TypeId              int       `db:"sitype"`
 	ReferredOperationId int64     `db:"bireferredoperationid"`
 	AccountId           int       `db:"icardaccountid"`
-	AmountChange        int64     `db:"namountchange"`
-	BlockedAmountChange int64     `db:"nblockedamountchange"`
+	AmountChange        float64   `db:"namountchange"`
+	BlockedAmountChange float64   `db:"nblockedamountchange"`
 }
 
 func GetOperationById(tx *sqlx.Tx, id int64) (TransactionOperation, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		op := TransactionOperation{}
-		err := tx.Get(&op, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange, 
-										nblockedamountchange
+		err := tx.Get(&op, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange * 0.01, 
+										nblockedamountchange * 0.01
 									  from ls.ttrnoperations where biid = $1`, id)
 		if err != nil {
 			log.Println(err)
@@ -103,7 +103,7 @@ func processOperation(tx *sqlx.Tx, operation TransactionOperation) error {
 }
 
 func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
-	amount int64, processOnline bool, account Account,
+	amount float64, processOnline bool, account Account,
 	m Merchant, terminal MerchantTerminal, _scheduledTime *time.Time,
 	trnRequestId int64, withdrawFeeAmount int64, chargeFeeAmount int64, typeEx int,
 	commitState int, referredOperationId int64) error {
@@ -112,8 +112,8 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		return errors.WrongOpError{}
 	}
 
-	var amountChange int64
-	var blockedAmountChange int64
+	var amountChange float64
+	var blockedAmountChange float64
 
 	if operationTypeId == TRNOPERTYPE_FOREIGN_TERMINAL_TO_TERMINAL_BLOCK {
 		amountChange = 0
@@ -204,7 +204,7 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 }
 
 func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
-	amount int64, processOnline bool, card Card, account Account,
+	amount float64, processOnline bool, card Card, account Account,
 	m Merchant, terminal MerchantTerminal, _scheduledTime *time.Time,
 	trnRequestId int64, withdrawFeeAmount int64, chargeFeeAmount int64, typeEx int,
 	commitState int, referredOperationId int64, descr string,
@@ -225,8 +225,8 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		}
 	}
 
-	var amountChange int64
-	var blockedAmountChange int64
+	var amountChange float64
+	var blockedAmountChange float64
 	if operationTypeId == TRNOPERTYPE_TERMINAL_TO_CLIENT_BLOCK {
 		amountChange = 0
 		blockedAmountChange = amount
@@ -238,7 +238,7 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		blockedAmountChange = -amount
 		amount = -amount
 	} else if operationTypeId == TRNOPERTYPE_CLIENT_ACTIVE_TO_TERMINAL {
-		if ((account.Bonuses-terminal.AllowedMinimum) < amount && typeEx < 10) &&
+		if ((account.Bonuses-terminal.AllowedMinimum) < float64(amount) && typeEx < 10) &&
 			(!m.AllowNegativeDecrease || !fromDecrease) {
 			return errors.WrongOpError{}
 		}

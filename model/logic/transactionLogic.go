@@ -1,10 +1,10 @@
 package logic
 
 import (
-	"git.kopilka.kz/BACKEND/golang_commons"
 	"git.kopilka.kz/BACKEND/golang_commons/errors"
 	"git.kopilka.kz/BACKEND/golang_commons/model/entities"
 	"github.com/jmoiron/sqlx"
+	"math"
 	"time"
 )
 
@@ -15,19 +15,19 @@ const (
 	AMOUNT_PERCENT_WITH_WITHDRAW_PART    = 4
 )
 
-func getChargeFeeAmount(m entities.Merchant, bonusAmount, amount, bonusAmountToPay int64, typeId int) int64 {
+func getChargeFeeAmount(m entities.Merchant, bonusAmount, amount, bonusAmountToPay float64, typeId int) int64 {
 	chargeFeeAmount := int64(0)
 
 	if typeId == entities.DEFAULT_ACC_TYPE {
 		switch m.ChargeFeeType {
 		case AMOUNT_PERCENT_WITHOUT_WITHDRAW_PART:
-			chargeFeeAmount = int64(float64(amount-bonusAmountToPay) * float64(m.ChargeFeeValue) / 100)
+			chargeFeeAmount = int64(amount - bonusAmountToPay*float64(m.ChargeFeeValue)/100)
 			break
 		case AMOUNT_PERCENT_WITH_WITHDRAW_PART:
-			chargeFeeAmount = int64((float64(amount) * float64(m.ChargeFeeValue) / 100))
+			chargeFeeAmount = int64(amount * float64(m.ChargeFeeValue) / 100)
 			break
 		case BONUS_PERCENT:
-			chargeFeeAmount = int64(float64(bonusAmount) * float64(m.ChargeFeeValue) / 100)
+			chargeFeeAmount = int64(bonusAmount * float64(m.ChargeFeeValue) / 100)
 			break
 		case FIXED:
 			chargeFeeAmount = int64(m.ChargeFeeValue * 100)
@@ -39,7 +39,7 @@ func getChargeFeeAmount(m entities.Merchant, bonusAmount, amount, bonusAmountToP
 	return chargeFeeAmount
 }
 
-func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entities.TrnItem, bonusAmountToPay int64, m entities.Merchant,
+func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entities.TrnItem, bonusAmountToPay float64, m entities.Merchant,
 	mt entities.MerchantTerminal, tr entities.TransactionRequest, t entities.Transaction, commitState int, includeBlocked bool, processOnline bool) error {
 	amount := entities.GetItemsOverallAmount(itemList)
 
@@ -140,7 +140,7 @@ func GetLastCardByClientId(tx *sqlx.Tx, clientId int, blockForUpdate bool) (enti
 }
 
 func WithdrawBonusesByPriority(tx *sqlx.Tx, crd entities.Card, mt entities.MerchantTerminal, m entities.Merchant, ctr entities.TransactionRequest,
-	ct entities.Transaction, amountToPay int64, needCommit int, includeBlocked bool, withdrawFeeAmount int64) error {
+	ct entities.Transaction, amountToPay float64, needCommit int, includeBlocked bool, withdrawFeeAmount int64) error {
 	withdrawFeeCalcCompleted := withdrawFeeAmount == -1
 
 	for amountToPay > 0 {
@@ -153,7 +153,7 @@ func WithdrawBonusesByPriority(tx *sqlx.Tx, crd entities.Card, mt entities.Merch
 			return errors.BalanceError{}
 		}
 
-		payOnThisIteration := golang_commons.Min(amountToPay, golang_commons.Max(accountToPay.Bonuses, 0))
+		payOnThisIteration := math.Min(amountToPay, math.Max(accountToPay.Bonuses, 0))
 
 		var withdrawFeeAmountOnThisIteration int64
 		if withdrawFeeAmount == -1 && accountToPay.TypeId == entities.DEFAULT_ACC_TYPE {

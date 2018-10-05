@@ -9,26 +9,26 @@ import (
 )
 
 type Account struct {
-	Id                 int   `db:"iid" xml:"id"`
-	TypeId             int   `db:"icardaccounttypeid"`
-	Bonuses            int64 `db:"nbonuses"`
-	BlockedBonuses     int64 `db:"nblockedbonuses"`
-	IsPaymentAllowed   bool  `db:"bispaymentallowed"`
-	IsTemporaryBlocked bool  `db:"bistemporaryblocked"`
-	IsTest             bool  `db:"bistest"`
-	IsBlocked          bool  `db:"bblocked"`
+	Id                 int     `db:"iid" xml:"id"`
+	TypeId             int     `db:"icardaccounttypeid"`
+	Bonuses            float64 `db:"nbonuses"`
+	BlockedBonuses     float64 `db:"nblockedbonuses"`
+	IsPaymentAllowed   bool    `db:"bispaymentallowed"`
+	IsTemporaryBlocked bool    `db:"bistemporaryblocked"`
+	IsTest             bool    `db:"btest"`
+	IsBlocked          bool    `db:"bblocked"`
 }
 
 type AccountChange struct {
-	ResultAmount        int64
-	ResultBlockedAmount int64
+	ResultAmount        float64
+	ResultBlockedAmount float64
 }
 
 const (
 	DEFAULT_ACC_TYPE = 1
 )
 
-func RegAccountChange(tx *sqlx.Tx, accId int, amountChange, blockedAmountChange int64) (AccountChange, error) {
+func RegAccountChange(tx *sqlx.Tx, accId int, amountChange, blockedAmountChange float64) (AccountChange, error) {
 
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		accChng := AccountChange{}
@@ -39,7 +39,7 @@ func RegAccountChange(tx *sqlx.Tx, accId int, amountChange, blockedAmountChange 
 			        ELSE dtburn END
 			 FROM ls.tcardaccounttypes cat 
 			 where tcardaccounts.iid = $3 AND cat.iid = icardaccounttypeid returning nbonuses, nblockedbonuses`,
-			amountChange, blockedAmountChange, accId)
+			amountChange*100, blockedAmountChange*100, accId)
 		if err != nil {
 			log.Println(err)
 			return accChng, err
@@ -68,7 +68,7 @@ func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
 			forUpdStr = " FOR UPDATE"
 		}
 
-		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses, ca.nblockedbonuses, ca.bispaymentallowed,
+		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
 				ca.bistemporaryblocked, ca.btest, ca.bblocked from ls.tcardaccounts ca  where iid = $1`+forUpdStr, id)
 		if err != nil {
 			log.Println(err)
@@ -83,7 +83,7 @@ func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
 func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Account, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		acc := Account{}
-		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses, ca.nblockedbonuses, ca.bispaymentallowed,
+		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
 				ca.bistemporaryblocked, ca.btest, ca.bblocked
 			from ls.tcardaccounts ca 
 				INNER JOIN ls.tcardaccounts_cards cac on ca.iid = cac.icardaccid and cac.icardid = $1 
@@ -115,7 +115,7 @@ func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Accou
 func GetAccListByClientId(tx *sqlx.Tx, clientId int) ([]Account, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		accs := []Account{}
-		err := tx.Select(&accs, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses, ca.nblockedbonuses, ca.bispaymentallowed,
+		err := tx.Select(&accs, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
 					ca.bistemporaryblocked, ca.btest, ca.bblocked
 				from ls.tcardaccounts ca
                     INNER JOIN ls.tcardaccounts_cards cac ON ca.iid = cac.icardaccid AND ca.btest IS FALSE AND ca.nbonuses > 0
@@ -133,7 +133,7 @@ func GetMerchantAccount(tx *sqlx.Tx, merchantId int, forUpdate bool) (Account, e
 		if forUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&acc, `select a.iid, a.icardaccounttypeid, a.nbonuses, a.nblockedbonuses, a.bispaymentallowed,
+		err := tx.Get(&acc, `select a.iid, a.icardaccounttypeid, a.nbonuses * 0.01 as nbonuses, a.nblockedbonuses * 0.01 as nblockedbonuses, a.bispaymentallowed,
 					a.bistemporaryblocked, a.btest, a.bblocked from ls.tmerchantaccounts m_a
 				INNER JOIN ls.tcardaccounts a on a.iid = m_a.iaccountid
 			WHERE imerchantid = $1 and bblocked is not true and bispaymentallowed is true`+forUpdStr, merchantId)
@@ -150,8 +150,8 @@ func GetByCardAndType(tx *sqlx.Tx, cardId, typeId int, forUpdate bool) (Account,
 		if forUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&acc, `SELECT  a.iid, a.icardaccounttypeid, a.nbonuses, a.nblockedbonuses, a.bispaymentallowed,
-					a.bistemporaryblocked, a.btest, a.bblocked 
+		err := tx.Get(&acc, `SELECT  a.iid, a.icardaccounttypeid, a.nbonuses * 0.01 as nbonuses, a.nblockedbonuses * 0.01 as nblockedbonuses, a.bispaymentallowed,
+					a.bistemporaryblocked, a.btest, coalesce(a.bblocked, false) as bblocked
 			FROM ls.tcardaccounts a
 				INNER JOIN ls.tcardaccounts_cards cac on a.iid = cac.icardaccid and cac.icardid = $1
 			WHERE a.icardAccountTypeId = $2 AND a.bblocked IS NOT TRUE`+forUpdStr, cardId, typeId)

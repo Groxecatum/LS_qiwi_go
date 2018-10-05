@@ -30,7 +30,7 @@ func CheckAuth(sessionId, login, psw, authCacheHost, authCachePath string) (bool
 }
 
 func GetAuthorizedActor(sessionId, login, psw, authCacheHost, authCachePath string) (entities.Actor, error) {
-	loginReq := ActorCheckSessionRequest{SessionId: sessionId}
+	loginReq := ActorCheckSessionRequest{SessionId: sessionId, Login: login, Password: psw}
 	responseStruct := entities.Actor{}
 
 	code, resp, err := logic.SendObjectJSON(loginReq, authCacheHost, authCachePath)
