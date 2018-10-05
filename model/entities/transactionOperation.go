@@ -166,10 +166,8 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		scheduledTime = *_scheduledTime
 	}
 
-	var processStatus int
+	processStatus := 0
 	if processOnline {
-		processStatus = 0
-	} else {
 		processStatus = 1
 	}
 

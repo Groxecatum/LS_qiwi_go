@@ -89,7 +89,7 @@ func BonusRequestFromBytes(b []byte, format string) (BonusRequest, error) {
 }
 
 func (req *BonusRequest) IsPayment() bool {
-	return req.Pin != "" && req.Type == "mrct_PayWithBonuses"
+	return req.Pin != "" || req.Type == "mrct_PayWithBonuses"
 }
 
 func NewBonusRequestStruct() BonusRequest {

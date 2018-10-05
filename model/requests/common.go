@@ -72,10 +72,10 @@ func CheckBalance(cardNum string, bonuses float64, balanceCacheHost, balanceCach
 
 }
 
-func CheckPin(pin string, clientId int, authCacheHost, authCachePath string) (bool, error) {
+func CheckPin(pin string, clientId int, pinCheckerHost, pinCheckerPath string) (bool, error) {
 	balanceReq := ActorCheckSessionRequest{SessionId: ""} //BalanceCheckRequest{CardNum: cardNum, Bonuses: bonuses}
 
-	code, resp, err := logic.SendObjectJSON(balanceReq, authCacheHost, authCachePath)
+	code, resp, err := logic.SendObjectJSON(balanceReq, pinCheckerHost, pinCheckerPath)
 	if err != nil {
 		return false, err
 	}
