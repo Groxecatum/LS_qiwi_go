@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const ctLayoutTime = "2006-01-02 15:04:05.999999"
+const ctLayoutTime = "2006-01-02 15:04:05"
 
 type CustomTime struct {
 	time.Time
