@@ -4,21 +4,21 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons"
+	"git.kopilka.kz/BACKEND/golang_commons/model/entities"
 	"net/http"
-	"time"
 )
 
 type CommitRequest struct {
 	CustomRequest
-	SessionId     string    `json:"sessionId"     xml:"sessionId"`
-	Login         string    `json:"login"         xml:"login"`
-	Password      string    `json:"psw"           xml:"psw"`
-	Date          time.Time `json:"date"          xml:"date"`
-	Terminal      int       `json:"terminal"      xml:"terminal"`
-	InitialRef    string    `json:"initialRef"    xml:"initialRef"`
-	Commit        int       `json:"commit"        xml:"commit"`
-	ReqChallenge  string    `json:"reqChallenge"  xml:"reqChallenge"`
-	AuthorizeCode string    `json:"authorizeCode" xml:"authorizeCode"`
+	SessionId     string              `json:"sessionId"     xml:"sessionId"`
+	Login         string              `json:"login"         xml:"login"`
+	Password      string              `json:"psw"           xml:"psw"`
+	Date          entities.CustomTime `json:"date"          xml:"date"`
+	Terminal      int                 `json:"terminal"      xml:"terminal"`
+	InitialRef    string              `json:"initialRef"    xml:"initialRef"`
+	Commit        int                 `json:"commit"        xml:"commit"`
+	ReqChallenge  string              `json:"reqChallenge"  xml:"reqChallenge"`
+	AuthorizeCode string              `json:"authorizeCode" xml:"authorizeCode"`
 }
 
 type CommitResponse struct {
