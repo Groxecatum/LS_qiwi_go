@@ -1,12 +1,11 @@
 package errors
 
 type WrongOpError struct {
+	Text string
 }
 
 const WronOpText = "Ошибка создания операции"
 
-var WrongOpErr = WrongOpError{}
-
 func (e WrongOpError) Error() string {
-	return WronOpText
+	return WronOpText + "[" + e.Text + "]"
 }

@@ -109,7 +109,7 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 	commitState int, referredOperationId int64) error {
 
 	if operationTypeId < TRNOPERTYPE_UNCANCEL_OPERATION {
-		return errors.WrongOpError{}
+		return errors.WrongOpError{"Попытка создать операцию партнера с типом операции клиента"}
 	}
 
 	var amountChange float64
@@ -154,17 +154,20 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		amountChange = 0
 		blockedAmountChange = 0
 	} else {
-		return errors.WrongOpError{}
+		return errors.WrongOpError{"Неверный тип операции"}
 	}
 
 	if commitState == 0 {
 		processOnline = false
 	}
 
-	var processStatus int
+	scheduledTime := time.Now()
+	if _scheduledTime != nil {
+		scheduledTime = *_scheduledTime
+	}
+
+	processStatus := 0
 	if processOnline {
-		processStatus = 0
-	} else {
 		processStatus = 1
 	}
 
@@ -173,8 +176,8 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 			siprocessed, icardaccountid, icardid, iterminalid, dtScheduledTime, bitrnrequestid, nchargefeeamount,
 			nwithdrawfeeamount, sitypeex, sicommitstate, namount, bireferredoperationid, sdescr)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) returning biid;`,
-			t.Id, operationTypeId, amountChange, blockedAmountChange, processStatus, account.Id, sql.NullInt64{}, terminal.Id,
-			_scheduledTime, trnRequestId, chargeFeeAmount, withdrawFeeAmount, typeEx, commitState, amount, referredOperationId, "")
+			t.Id, operationTypeId, amountChange*100, blockedAmountChange*100, processStatus, account.Id, sql.NullInt64{}, terminal.Id,
+			scheduledTime, trnRequestId, chargeFeeAmount*100, withdrawFeeAmount*100, typeEx, commitState, amount*100, referredOperationId, "")
 		if err != nil {
 			return nil, err
 		}
@@ -210,7 +213,7 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 	commitState int, referredOperationId int64, descr string,
 	includeBlockedCards bool, fromDecrease bool) error {
 	if operationTypeId > TRNOPERTYPE_UNCANCEL_OPERATION {
-		return errors.WrongOpError{}
+		return errors.WrongOpError{"Попытка создать операцию клиента с типом операции партнера"}
 	}
 
 	if card.IsTest != account.IsTest || card.IsTest != terminal.IsTest || account.IsTest != terminal.IsTest {
@@ -219,9 +222,9 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 
 	if !includeBlockedCards {
 		if card.IsBlocked {
-			return errors.WrongOpError{}
+			return errors.WrongOpError{"Карта заблокирована"}
 		} else if account.IsBlocked {
-			return errors.WrongOpError{}
+			return errors.WrongOpError{"Аккаунт заблокирован"}
 		}
 	}
 
@@ -240,7 +243,7 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 	} else if operationTypeId == TRNOPERTYPE_CLIENT_ACTIVE_TO_TERMINAL {
 		if ((account.Bonuses-terminal.AllowedMinimum) < float64(amount) && typeEx < 10) &&
 			(!m.AllowNegativeDecrease || !fromDecrease) {
-			return errors.WrongOpError{}
+			return errors.WrongOpError{"Ограничение терминала"}
 		}
 		amountChange = -amount
 		blockedAmountChange = 0
@@ -260,18 +263,21 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		amountChange = 0
 		blockedAmountChange = 0
 	} else {
-		return errors.WrongOpError{}
+		return errors.WrongOpError{"Неверный тип операции"}
 	}
 
 	if commitState == 0 {
 		processOnline = false
 	}
 
-	var processStatus int
+	processStatus := 0
 	if processOnline {
-		processStatus = 0
-	} else {
 		processStatus = 1
+	}
+
+	scheduledTime := time.Now()
+	if _scheduledTime != nil {
+		scheduledTime = *_scheduledTime
 	}
 
 	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
@@ -279,8 +285,8 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 			siprocessed, icardaccountid, icardid, iterminalid, dtScheduledTime, bitrnrequestid, nchargefeeamount,
 			nwithdrawfeeamount, sitypeex, sicommitstate, namount, bireferredoperationid, sdescr)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) returning biid;`,
-			t.Id, operationTypeId, amountChange, blockedAmountChange, processStatus, account.Id, card.Id, terminal.Id,
-			_scheduledTime, trnRequestId, chargeFeeAmount, withdrawFeeAmount, typeEx, commitState, amount, referredOperationId,
+			t.Id, operationTypeId, amountChange*100, blockedAmountChange*100, processStatus, account.Id, card.Id, terminal.Id,
+			scheduledTime, trnRequestId, chargeFeeAmount*100, withdrawFeeAmount*100, typeEx, commitState, amount*100, referredOperationId,
 			descr)
 		if err != nil {
 			return nil, err
