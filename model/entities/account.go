@@ -69,7 +69,7 @@ func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
 		}
 
 		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
-				ca.bistemporaryblocked, ca.btest, ca.bblocked from ls.tcardaccounts ca  where iid = $1`+forUpdStr, id)
+				ca.bistemporaryblocked, coalesce(ca.btest, false) as btest, coalesce(ca.bblocked, false) as bblocked from ls.tcardaccounts ca  where iid = $1`+forUpdStr, id)
 		if err != nil {
 			log.Println(err)
 			return acc, err
@@ -82,9 +82,9 @@ func GetAccountById(tx *sqlx.Tx, id int, lock bool) (Account, error) {
 
 func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Account, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
-		acc := Account{}
-		err := tx.Get(&acc, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
-				ca.bistemporaryblocked, ca.btest, ca.bblocked
+		accs := []Account{}
+		err := tx.Select(&accs, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
+				ca.bistemporaryblocked, coalesce(ca.btest, false) as btest, coalesce(ca.bblocked, false) as bblocked
 			from ls.tcardaccounts ca 
 				INNER JOIN ls.tcardaccounts_cards cac on ca.iid = cac.icardaccid and cac.icardid = $1 
 				INNER JOIN ls.tcardaccounttypes cat ON cat.iid = ca.icardaccounttypeid 
@@ -96,18 +96,18 @@ func GetAccountForWithdrawByPriority(tx *sqlx.Tx, cardId, merchantId int) (Accou
 
 		if err != nil {
 			log.Println(err)
-			return acc, err
+			return accs, err
 		}
 
-		if acc.Id == 0 {
-			return acc, errors.InsufficientFundsErr
+		if len(accs) == 0 {
+			return Account{}, errors.InsufficientFundsError{}
 		}
 
-		if (!acc.IsPaymentAllowed) || acc.IsTemporaryBlocked {
-			return acc, errors.BlockedErr
+		if (!accs[0].IsPaymentAllowed) || accs[0].IsTemporaryBlocked {
+			return accs[0], errors.BlockedError{}
 		}
 
-		return acc, err
+		return accs[0], err
 	}, tx)
 	return res.(Account), err
 }
@@ -116,7 +116,7 @@ func GetAccListByClientId(tx *sqlx.Tx, clientId int) ([]Account, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		accs := []Account{}
 		err := tx.Select(&accs, `select ca.iid, ca.icardaccounttypeid, ca.nbonuses * 0.01 as nbonuses, ca.nblockedbonuses * 0.01 as nblockedbonuses, ca.bispaymentallowed,
-					ca.bistemporaryblocked, ca.btest, ca.bblocked
+					ca.bistemporaryblocked, coalesce(ca.btest, false) as btest, coalesce(ca.bblocked, false) as bblocked
 				from ls.tcardaccounts ca
                     INNER JOIN ls.tcardaccounts_cards cac ON ca.iid = cac.icardaccid AND ca.btest IS FALSE AND ca.nbonuses > 0
                     INNER JOIN ls.tcards crd ON cac.icardid = crd.iid AND crd.iclientid = $1;`, clientId)
@@ -134,7 +134,7 @@ func GetMerchantAccount(tx *sqlx.Tx, merchantId int, forUpdate bool) (Account, e
 			forUpdStr = " FOR UPDATE"
 		}
 		err := tx.Get(&acc, `select a.iid, a.icardaccounttypeid, a.nbonuses * 0.01 as nbonuses, a.nblockedbonuses * 0.01 as nblockedbonuses, a.bispaymentallowed,
-					a.bistemporaryblocked, a.btest, a.bblocked from ls.tmerchantaccounts m_a
+					a.bistemporaryblocked, coalesce(a.btest, false) as btest, coalesce(a.bblocked, false) as bblocked from ls.tmerchantaccounts m_a
 				INNER JOIN ls.tcardaccounts a on a.iid = m_a.iaccountid
 			WHERE imerchantid = $1 and bblocked is not true and bispaymentallowed is true`+forUpdStr, merchantId)
 
@@ -151,7 +151,7 @@ func GetByCardAndType(tx *sqlx.Tx, cardId, typeId int, forUpdate bool) (Account,
 			forUpdStr = " FOR UPDATE"
 		}
 		err := tx.Get(&acc, `SELECT  a.iid, a.icardaccounttypeid, a.nbonuses * 0.01 as nbonuses, a.nblockedbonuses * 0.01 as nblockedbonuses, a.bispaymentallowed,
-					a.bistemporaryblocked, a.btest, coalesce(a.bblocked, false) as bblocked
+					a.bistemporaryblocked, coalesce(a.btest, false) as btest, coalesce(a.bblocked, false) as bblocked
 			FROM ls.tcardaccounts a
 				INNER JOIN ls.tcardaccounts_cards cac on a.iid = cac.icardaccid and cac.icardid = $1
 			WHERE a.icardAccountTypeId = $2 AND a.bblocked IS NOT TRUE`+forUpdStr, cardId, typeId)

@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"git.kopilka.kz/BACKEND/golang_commons/db"
 	"github.com/jmoiron/sqlx"
+	"log"
 	"time"
 )
 
@@ -110,10 +111,12 @@ func SetTerminalId(list []TrnItem, id int) {
 func SaveTrnItems(tx *sqlx.Tx, list []TrnItem) error {
 	var err error
 	for _, item := range list {
+		start := time.Now()
 		err := item.save(tx)
 		if err != nil {
 			break
 		}
+		log.Println("si.saved", time.Since(start))
 	}
 	return err
 }
@@ -126,4 +129,24 @@ func GetAccountTypesAndSumsFromItems(list []TrnItem) map[int]float64 {
 		}
 	}
 	return res
+}
+
+func UpdateTrnItemsState(tx *sqlx.Tx, trnId int64) error {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		_, err := tx.Exec(` update ls.tsrctransactionitems sti
+			 set isactual = tr.sicommitstate >= 1 --and
+-- 			                  not exists (select * from ls.tsrctransactionitems sti1
+-- 			                    			inner join ls.ttrnrequests tr1 on sti1.bitrnrequestid = tr1.biid
+-- 			                              where sti1.sitemsid = sti.sitemsid and
+-- 			                                          sti1.iidincheck = sti.iidincheck and
+-- 			                                          tr1.sicommitstate >= 1 and
+-- 			                                          sti1.dtcreated > sti.dtcreated and
+-- 			                                          sti1.bcancelled = false and
+-- 			                                          sti1.bitransactionid = sti.bitransactionid)
+			 from ls.ttrnrequests tr
+			 where bcancelled = false and sti.bitrnrequestid = tr.biid and sti.bitransactionid = $1`, trnId)
+
+		return nil, err
+	}, tx)
+	return err
 }

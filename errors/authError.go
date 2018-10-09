@@ -1,12 +1,11 @@
 package errors
 
 type AuthError struct {
+	Text string
 }
 
 const authErrorText = "Ошибка аутентификации"
 
-var AuthErr = AuthError{}
-
 func (e AuthError) Error() string {
-	return authErrorText
+	return authErrorText + "[" + e.Text + "]"
 }

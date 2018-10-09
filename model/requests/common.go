@@ -17,7 +17,7 @@ func CheckAuth(sessionId, login, psw, authCacheHost, authCachePath string) (bool
 	}
 
 	if code != http.StatusOK {
-		return false, errors.AuthErr
+		return false, errors.AuthError{"Неверные данные аутентификации"}
 	}
 
 	resposeStruct := CustomBoolResponse{}
@@ -39,7 +39,7 @@ func GetAuthorizedActor(sessionId, login, psw, authCacheHost, authCachePath stri
 	}
 
 	if code != http.StatusOK {
-		return responseStruct, errors.AuthErr
+		return responseStruct, errors.AuthError{"Неверные данные аутентификации"}
 	}
 
 	err = json.Unmarshal(resp, &responseStruct)

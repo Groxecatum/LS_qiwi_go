@@ -1,12 +1,11 @@
 package errors
 
 type NotFoundError struct {
+	CustomError
 }
 
 const notFoundText = "Сущность не найдена"
 
-var NotFoundErr = NotFoundError{}
-
 func (e NotFoundError) Error() string {
-	return notFoundText
+	return notFoundText + "[" + e.Text + "]"
 }

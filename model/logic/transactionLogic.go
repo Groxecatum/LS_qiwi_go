@@ -5,6 +5,7 @@ import (
 	"git.kopilka.kz/BACKEND/golang_commons/model/entities"
 	"github.com/jmoiron/sqlx"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -43,7 +44,12 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 	mt entities.MerchantTerminal, tr entities.TransactionRequest, t entities.Transaction, commitState int, includeBlocked bool, processOnline bool) error {
 	amount := entities.GetItemsOverallAmount(itemList)
 
-	scheduledTime := time.Now().AddDate(0, 0, m.BlockDays)
+	var scheduledTime *time.Time
+	if m.BlockDays > 0 {
+		*scheduledTime = time.Now().AddDate(0, 0, m.BlockDays)
+	} else {
+		scheduledTime = nil
+	}
 
 	typesList := entities.GetAccountTypesAndSumsFromItems(itemList)
 
@@ -78,7 +84,7 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 			}
 
 			err = entities.RegMerchantOperation(tx, t, entities.TRNOPERTYPE_TERMINAL_BLOCK_TO_CLIENT,
-				bonusAmount, processOnline, merchantAccount, m, mt, &scheduledTime,
+				bonusAmount, processOnline, merchantAccount, m, mt, scheduledTime,
 				tr.Id, 0, 0,
 				entities.TRNOPERTYPEEX_COMMIT, commitState, 0)
 			if err != nil {
@@ -95,7 +101,7 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 			return err
 		}
 		err = entities.RegClientOperation(tx, t, entities.TRNOPERTYPE_CLIENT_BLOCK_TO_ACTIVE,
-			bonusAmount, processOnline, crd, clientAccount, m, mt, &scheduledTime, tr.Id,
+			bonusAmount, processOnline, crd, clientAccount, m, mt, scheduledTime, tr.Id,
 			0, 0, entities.TRNOPERTYPEEX_COMMIT, commitState,
 			0, "", includeBlocked, false)
 		if err != nil {
@@ -106,11 +112,6 @@ func GainBonusesBySrcItemList(tx *sqlx.Tx, crd entities.Card, itemList []entitie
 	return nil
 }
 
-func findLastUsedCardId(tx *sqlx.Tx, clientId int) (entities.Card, error) {
-	// TODO
-	return entities.Card{}, nil
-}
-
 func GetLastCardByClientId(tx *sqlx.Tx, clientId int, blockForUpdate bool) (entities.Card, error) {
 	var card entities.Card
 	cardList, err := entities.GetCardlistByClient(tx, clientId)
@@ -119,20 +120,21 @@ func GetLastCardByClientId(tx *sqlx.Tx, clientId int, blockForUpdate bool) (enti
 	}
 
 	if len(cardList) == 0 {
-		return entities.Card{}, errors.NotFoundError{}
+		return entities.Card{}, errors.NotFoundError{CustomError: errors.CustomError{"Карты клиента " + strconv.Itoa(clientId) + " не найдены"}}
 	}
 
-	if len(cardList) == 1 { /* если у нас только один кард-аккаунт, то без разницы. с какой карты пройдет оплата */
-		return card, nil
+	if len(cardList) == 1 { /* если у нас только одна карта, то без разницы */
+		return cardList[0], nil
 	}
 
-	card, err = findLastUsedCardId(tx, clientId)
+	card, err = entities.FindLastUsedCard(tx, clientId)
 	if err != nil {
 		return entities.Card{}, err
 	}
 
 	if card.Id == 0 {
-		return entities.Card{}, errors.NotFoundError{}
+		return entities.Card{}, errors.NotFoundError{CustomError: errors.CustomError{"Последняя использованная карта для клиента " +
+			strconv.Itoa(clientId) + " не найдена"}}
 	}
 
 	return card, err

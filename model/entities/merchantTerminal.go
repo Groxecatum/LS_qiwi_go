@@ -21,7 +21,8 @@ func GetMerchantTerminal(tx *sqlx.Tx, actorId, terminalNum int, lock bool) (Merc
 		if lock {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&mt, `select iid, imerchantid, bneedpostponecommit, btest, nallowedminimum from ls.tmerchantterminals 
+		err := tx.Get(&mt, `select iid, imerchantid, bneedpostponecommit, coalesce(btest, false) as btest, coalesce(nallowedminimum, 0) as nallowedminimum 
+								from ls.tmerchantterminals 
 								where isalespointid = $1 and iterminalnum = $2 `+forUpdStr, actorId, terminalNum)
 		if err != nil {
 			log.Println(err)
@@ -40,7 +41,9 @@ func GetMerchantTerminalById(tx *sqlx.Tx, terminalId int, lock bool) (MerchantTe
 		if lock {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&mt, `select iid, imerchantid, bneedpostponecommit, btest from ls.tmerchantterminals where iid = $1 `+forUpdStr,
+		err := tx.Get(&mt, `select iid, imerchantid, bneedpostponecommit, coalesce(btest, false) as btest, 
+								coalesce(nallowedminimum, 0) as nallowedminimum 
+							from ls.tmerchantterminals where iid = $1 `+forUpdStr,
 			terminalId)
 		if err != nil {
 			log.Println(err)

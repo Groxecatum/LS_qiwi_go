@@ -1,12 +1,11 @@
 package errors
 
 type WrongFormatError struct {
+	CustomError
 }
 
-const wrongFormatText = "Сущность не найдена"
-
-var WrongFormatErr = WrongFormatError{}
+const wrongFormatText = "Неверный формат запроса"
 
 func (e WrongFormatError) Error() string {
-	return notFoundText
+	return wrongFormatText + "[" + e.Text + "]"
 }

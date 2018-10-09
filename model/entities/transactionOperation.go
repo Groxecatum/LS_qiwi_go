@@ -50,8 +50,8 @@ type TransactionOperation struct {
 func GetOperationById(tx *sqlx.Tx, id int64) (TransactionOperation, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		op := TransactionOperation{}
-		err := tx.Get(&op, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange * 0.01, 
-										nblockedamountchange * 0.01
+		err := tx.Get(&op, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange * 0.01 as namountchange, 
+										nblockedamountchange * 0.01 as nblockedamountchange
 									  from ls.ttrnoperations where biid = $1`, id)
 		if err != nil {
 			log.Println(err)
@@ -73,7 +73,7 @@ func setOperationCancelled(tx *sqlx.Tx, opId int64, newState bool) error {
 	return err
 }
 
-func processOperation(tx *sqlx.Tx, operation TransactionOperation) error {
+func ProcessOperation(tx *sqlx.Tx, operation TransactionOperation) error {
 	var crcr AccountChange
 	var err error
 	if operation.TypeId == TRNOPERTYPE_CANCEL_OPERATION || operation.TypeId == TRNOPERTYPE_UNCANCEL_OPERATION {
@@ -193,8 +193,11 @@ func RegMerchantOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 				return nil, err
 			}
 
+			rows.Close()
+
 			if processOnline {
-				err = processOperation(tx, operation)
+				// Вот тут мы прикроем принудительно rows, иначе он пошлет нас при попытке дернуть данные обработки
+				err = ProcessOperation(tx, operation)
 				if err != nil {
 					return nil, err
 				}
@@ -217,7 +220,7 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 	}
 
 	if card.IsTest != account.IsTest || card.IsTest != terminal.IsTest || account.IsTest != terminal.IsTest {
-		return errors.WrongOpError{}
+		return errors.WrongOpError{"Попытка использовать тестовый терминал с боевой картой(или наоборот, боевой терминал с тестовой)"}
 	}
 
 	if !includeBlockedCards {
@@ -302,8 +305,10 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 				return nil, err
 			}
 
+			rows.Close()
+
 			if processOnline {
-				err = processOperation(tx, operation)
+				err = ProcessOperation(tx, operation)
 				if err != nil {
 					return nil, err
 				}
@@ -313,4 +318,26 @@ func RegClientOperation(tx *sqlx.Tx, t Transaction, operationTypeId int,
 		return nil, err
 	}, tx)
 	return err
+}
+
+func GetNextOperation(tx *sqlx.Tx) (TransactionOperation, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		ops := []TransactionOperation{}
+		err := tx.Select(&ops, `select biid, bitrnid, dtcreated, sitype, bireferredoperationid, icardaccountid, namountchange * 0.01 as namountchange, 
+										nblockedamountchange * 0.01 as nblockedamountchange from ls.ttrnoperations 
+					where siprocessed = 0 and dtscheduledtime <= CURRENT_TIMESTAMP and bcancelled = false and sicommitstate in (1,2)
+					order by dtscheduledtime limit 1 for update;`)
+		if err != nil {
+			return TransactionOperation{}, err
+		}
+
+		if len(ops) == 0 {
+			return TransactionOperation{}, nil
+		}
+
+		return ops[0], nil
+	}, tx)
+
+	return res.(TransactionOperation), err
+
 }

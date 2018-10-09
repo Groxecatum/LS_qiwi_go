@@ -8,14 +8,14 @@ import (
 )
 
 type Transaction struct {
-	Id        int64
-	DtCreated time.Time
+	Id        int64     `db:"biid"`
+	DtCreated time.Time `db:"dtcreated"`
 }
 
 func GetTransactionById(tx *sqlx.Tx, id int64) (Transaction, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		trn := Transaction{}
-		err := tx.Get(&trn, `select * from ls.ttransactions where biid = $1`, id)
+		err := tx.Get(&trn, `select biid, dtcreated from ls.ttransactions where biid = $1`, id)
 		if err != nil {
 			log.Println(err)
 			return trn, err

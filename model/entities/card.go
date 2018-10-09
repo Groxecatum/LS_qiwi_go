@@ -13,10 +13,12 @@ import (
 )
 
 type Card struct {
-	Id        int  `db:"iid"`
-	ClientId  int  `db:"iclientid"`
-	IsBlocked bool `db:"bblocked"`
-	IsTest    bool `db:"btest"`
+	Id                int  `db:"iid"`
+	ClientId          int  `db:"iclientid"`
+	IsBlocked         bool `db:"bblocked"`
+	IsTest            bool `db:"btest"`
+	DistrSalesPointId int  `db:"idistrsalespointid"`
+	IsVirtual         bool `db:"bvirtual"`
 }
 
 type GeneratedCard struct {
@@ -33,7 +35,7 @@ func GetCardById(tx *sqlx.Tx, id int, lock bool) (Card, error) {
 			forUpdStr = " FOR UPDATE"
 		}
 
-		err := tx.Get(&crd, `select iid, iclientid, btest, bblocked from ls.tcards where iid = $1`+forUpdStr, id)
+		err := tx.Get(&crd, `select iid, iclientid, btest, bblocked, bvirtual, coalesce(idistrsalespointid, 0) as idistrsalespointid from ls.tcards where iid = $1`+forUpdStr, id)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -50,7 +52,7 @@ func (crd *Card) GetClient(tx *sqlx.Tx) (Client, error) {
 
 func ExtractCardNum(fullNum string) (string, error) {
 	if len(fullNum) < 13 || len(fullNum) > 16 {
-		return "", errors.WrongFormatErr
+		return "", errors.WrongFormatError{CustomError: errors.CustomError{"Неверный номер карты"}}
 	}
 	return fullNum[0:13], nil
 }
@@ -75,7 +77,7 @@ func getLastCardId(tx *sqlx.Tx) (int, error) {
 
 			id = id[4:12]
 		} else {
-			return id, errors.NotFoundErr
+			return id, errors.NotFoundError{CustomError: errors.CustomError{"Карт не найдено"}}
 		}
 
 		return id, err
@@ -217,7 +219,7 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 		if blockForUpdate {
 			forUpdStr = " FOR UPDATE"
 		}
-		err := tx.Get(&crd, "select iid, iclientid, btest, bblocked from ls.tcards where scardnum = $1"+forUpdStr, num)
+		err := tx.Get(&crd, "select iid, iclientid, btest, bblocked,  bvirtual, coalesce(idistrsalespointid, 0) as idistrsalespointid from ls.tcards where scardnum = $1"+forUpdStr, num)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -231,7 +233,9 @@ func GetCardByNum(tx *sqlx.Tx, num string, blockForUpdate bool) (Card, error) {
 func GetCardlistByClient(tx *sqlx.Tx, clientId int) ([]Card, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		crd := []Card{}
-		err := tx.Select(&crd, "select iid, iclientid, btest, bblocked from ls.tcards where iclientid = $1", clientId)
+		err := tx.Select(&crd, `select iid, iclientid, btest, bblocked, bvirtual,
+				coalesce(idistrsalespointid, 0) as idistrsalespointid
+			from ls.tcards where iclientid = $1`, clientId)
 		if err != nil {
 			log.Println(err)
 			return crd, err
@@ -240,4 +244,41 @@ func GetCardlistByClient(tx *sqlx.Tx, clientId int) ([]Card, error) {
 		return crd, err
 	}, tx)
 	return res.([]Card), err
+}
+
+func (card *Card) SetDistrSalesPointId(tx *sqlx.Tx, id int, timeSent time.Time) error {
+	_, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		_, err := tx.Exec("UPDATE ls.tCards SET idistrsalespointid = $1, dtsentToSP = $2 WHERE iID = $3;",
+			id, timeSent, card.Id)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		card.DistrSalesPointId = id
+		return nil, err
+	}, tx)
+	return err
+}
+
+func FindLastUsedCard(tx *sqlx.Tx, clientId int) (Card, error) {
+	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
+		crds := []Card{}
+		err := tx.Select(&crds, `select iid, iclientid, btest, bblocked,  bvirtual, 
+										coalesce(idistrsalespointid, 0) as idistrsalespointid 
+										from ls.ttrnrequests req
+											inner join ls.tcards crd on crd.iid = req.ioriginalcardid
+										where crd.iclientid = $1 order by dtcreated desc limit 1`, clientId)
+		if err != nil {
+			log.Println(err)
+			return crds, err
+		}
+
+		if len(crds) == 0 {
+			return Card{}, errors.NotFoundError{CustomError: errors.CustomError{"Последней использованной карты не найдено для пользователя " +
+				strconv.Itoa(clientId)}}
+		}
+
+		return crds[0], err
+	}, tx)
+	return res.(Card), err
 }

@@ -13,12 +13,13 @@ type Client struct {
 	FirstName    string    `db:"sfirstname"`
 	CellPhone    string    `db:"scellphone"`
 	DtRegistered time.Time `db:"dtregistered"`
+	Sex          int       `db:"sisex"`
 }
 
 func GetClientById(tx *sqlx.Tx, id int) (Client, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
-		err := tx.Get(&cli, `select iid, bisregistered, sfirstname, scellphone, dtregistered from ls.tclients where iid = $1`, id)
+		err := tx.Get(&cli, `select iid, bisregistered, sfirstname, scellphone, dtregistered, sisex from ls.tclients where iid = $1`, id)
 		if err != nil {
 			log.Println(err)
 			return cli, err
@@ -32,7 +33,7 @@ func GetClientById(tx *sqlx.Tx, id int) (Client, error) {
 func GetClientByCellPhone(tx *sqlx.Tx, phone string) (Client, error) {
 	res, err := db.DoX(func(tx *sqlx.Tx) (interface{}, error) {
 		cli := Client{}
-		err := tx.Get(&cli, `select * from ls.tclients where scellphone = $1`, phone)
+		err := tx.Get(&cli, `select iid, bisregistered, sfirstname, scellphone, dtregistered, sisex from ls.tclients where scellphone = $1`, phone)
 		if err != nil {
 			log.Println(err)
 			return cli, err
